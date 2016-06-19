@@ -63,3 +63,54 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return '{} <{}>'.format(self.username, self.email)
 
+
+class Game(db.Model):
+    """
+    Model of a Game-entity
+    """
+    game_state = {'waiting_for_players': 0,
+                  'player_one_turn': 1,
+                  'player_two_turn': 2,
+                  'finished': 3}
+
+    game_result = {'draw': 0,
+                   'player_one_win': 1,
+                   'player_two_win': 2}
+
+    __tablename__ = 'games'
+    id = db.Column('game_id', db.Integer, primary_key=True)
+    field_size = db.Column(db.Integer)
+    win_length = db.Column(db.Integer)
+    state = db.Column(db.Integer, default=game_state['waiting_for_players'])
+    result = db.Column(db.Integer)
+    moves = db.relationship('GameMove', backref='game', lazy='dynamic')
+
+
+class GameUser(db.Model):
+    """
+    Intermediary model for Games-to-Users many-to-many relation
+    """
+    user_game_role = {'spectator': 0,
+                      'player_one': 1,
+                      'player_two': 2}
+
+    __tablename__ = 'game_users'
+    game_id = db.Column(db.Integer, db.ForeignKey('games.game_id'), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
+    user_role = db.Column(db.Integer)
+    game = db.relationship('Game', backref='game_users')
+    user = db.relationship('User', backref='user_games')
+
+
+class GameMove(db.Model):
+    """
+    Model of player's move in a game
+    """
+    move_type = {'player_one': 1,
+                 'player_two': 2}
+
+    __tablename__ = 'moves'
+    id = db.Column('move_id', db.Integer, primary_key=True)
+    ordinal_number = db.Column(db.Integer)
+    game_id = db.Column(db.Integer, db.ForeignKey('games.game_id'))
+    player = db.Column(db.Integer)
