@@ -1,0 +1,20 @@
+body {
+    text-align: center;
+    font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.846;
+    color: #666666;
+    margin: 0;
+}
+
+.body-back-color {
+    background-color: #f1f1f1;
+}
+
+.auth-form {
+    background-color: #ffffff;
+}
+
+.main-block {
+    background-color: #f1f1f1;
+}

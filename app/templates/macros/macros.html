@@ -1,0 +1,30 @@
+{% macro render_logout_button() %}
+<form action="{{ url_for('logout') }}" method="POST">
+<input type="submit" value="Logout" class="btn btn-default">
+</form>
+{% endmacro %}
+
+
+{# Renders field using bootstrap3 #}
+{% macro render_field(field) %}
+    <div class="form-group {% if field.errors %}has-error{% endif %} {{ kwargs.pop('class_', '') }}">
+        {{ field(class_='form-control', placeholder=field.label.text, **kwargs) }}
+        {% if field.errors %}
+            {% for e in field.errors %}
+                <p class="help-block">{{ e }}</p>
+            {% endfor %}
+        {% endif %}
+    </div>
+{% endmacro %}
+
+
+{# Renders WTForm using bootstrap3 #}
+{% macro render_form(form, action_url='', action_text='Submit', class_='', btn_class='btn btn-default') %}
+    <form method="POST" action="{{ action_url }}" role="form" class="{{ class_ }}">
+        {{ form.hidden_tag() if form.hidden_tag }}
+        {% for f in form %}
+            {{ render_field(f) }}
+        {% endfor %}
+        <button type="submit" class="{{ btn_class }}">{{ action_text }} </button>
+    </form>
+{% endmacro %}

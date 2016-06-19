@@ -1,6 +1,6 @@
 from flask import render_template, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
-from app import app, db
+from app import app, db, login_manager
 from app.models import User
 from app import forms
 
@@ -48,8 +48,13 @@ def register():
         db.session.commit()
         login_user(user)
 
+    # Redirect to homepage, if user is successfully authenticated
     if current_user.is_authenticated:
         return redirect(url_for('index'))
 
     return render_template('register.html', register_form=form)
 
+
+@login_manager.user_loader
+def load_user(userid):
+    return User.get_user_by_id(userid)
