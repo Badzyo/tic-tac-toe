@@ -35,7 +35,15 @@
     <div class="list-group">
       {% for game in games %}
       <a href="{{ url_for('show_game', game_id=game.id) }}" class="list-group-item">
-        <h4 class="list-group-item-heading">{{ game.first_player }} vs {{ game.second_player }}</h4>
+        <h4 class="list-group-item-heading">
+        {% for relation in game.game_users | sort(attribute='user_role') %}
+            {{ relation.user.username }}
+            {% if loop.first %} vs {% endif %}
+        {% endfor %}
+        {% if game.game_users|length == 1 %}
+            ___
+        {% endif %}
+        </h4>
         <p class="list-group-item-text">
             <p> Game size: {{ game.field_size }} </p>
             <p> Win row length: {{ game.win_length }}</p>
