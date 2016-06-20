@@ -1,6 +1,7 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.orm import exc
+from sqlalchemy.orm import exc, backref
+from sqlalchemy import and_, null
 from flask_login import UserMixin
 from app import app, db
 
@@ -12,6 +13,7 @@ class User(UserMixin, db.Model):
     password = db.Column('password', db.String(20))
     email = db.Column('email', db.String(50), unique=True, index=True)
     registered_on = db.Column('registered_on', db.DateTime, default=datetime.utcnow())
+    games = db.relationship('GameUser', lazy='dynamic')
 
     def __init__(self, username, password, email, registered=None):
         super().__init__()
@@ -60,6 +62,19 @@ class User(UserMixin, db.Model):
         except exc.NoResultFound:
             return None
 
+    @property
+    def current_game(self):
+        """
+        Returns user's current game, or None
+        """
+        user_game = self.games.filter(and_(GameUser.user_role.in_([GameUser.user_game_role['player_one'],
+                                                                   GameUser.user_game_role['player_two']]),
+                                           (Game.state != Game.game_state['finished']))).first()
+        try:
+            return user_game.game
+        except AttributeError:
+            return None
+
     def __repr__(self):
         return '{} <{}>'.format(self.username, self.email)
 
@@ -83,6 +98,7 @@ class Game(db.Model):
     win_length = db.Column(db.Integer)
     state = db.Column(db.Integer, default=game_state['waiting_for_players'])
     result = db.Column(db.Integer)
+    users = db.relationship('GameUser', lazy='dynamic')
     moves = db.relationship('GameMove', backref='game', lazy='dynamic')
 
 
@@ -98,8 +114,8 @@ class GameUser(db.Model):
     game_id = db.Column(db.Integer, db.ForeignKey('games.game_id'), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
     user_role = db.Column(db.Integer)
-    game = db.relationship('Game', backref='game_users')
-    user = db.relationship('User', backref='user_games')
+    game = db.relationship('Game')
+    user = db.relationship('User')
 
 
 class GameMove(db.Model):

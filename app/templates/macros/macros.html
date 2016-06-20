@@ -36,11 +36,12 @@
       {% for game in games %}
       <a href="{{ url_for('show_game', game_id=game.id) }}" class="list-group-item">
         <h4 class="list-group-item-heading">
-        {% for relation in game.game_users | sort(attribute='user_role') %}
+        {% set relations = game.users | rejectattr('user_role', 'equalto', 0) | sort(attribute='user_role') %}
+        {% for relation in relations %}
             {{ relation.user.username }}
             {% if loop.first %} vs {% endif %}
         {% endfor %}
-        {% if game.game_users|length == 1 %}
+        {% if relations | length == 1 %}
             ___
         {% endif %}
         </h4>

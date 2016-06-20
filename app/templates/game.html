@@ -2,11 +2,12 @@
 {% block content %}
     <div class="main-block row col-lg-4 col-lg-offset-4 col-md-6 col-md-offset-3 col-xs-12">
         <h3>
-        {% for relation in game.game_users | sort(attribute='user_role') %}
+        {% set relations = game.users | rejectattr('user_role', 'equalto', 0) | sort(attribute='user_role') %}
+        {% for relation in relations %}
             {{ relation.user.username }}
             {% if loop.first %} vs {% endif %}
         {% endfor %}
-        {% if game.game_users|length == 1 %}
+        {% if relations | length == 1 %}
             ___
         {% endif %}
         </h3>
@@ -18,5 +19,8 @@
                 <p>Game win length: {{ game.win_length }}</p
             </div>
         </div>
+        <p>
+            <a href="{{ url_for('index') }}" >Go to homepage</a>
+        </p>
     </div>
 {% endblock %}

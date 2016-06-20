@@ -1,13 +1,14 @@
 import random
 from flask import render_template, redirect, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
-from app import app, db, login_manager
+from app import app, db, login_manager, forms
 from app.models import User, Game, GameUser, GameMove
-from app import forms
+from app.decorators import not_in_game
 
 
 @app.route("/")
 @login_required
+@not_in_game
 def index():
     games_in_wait = Game.query.filter_by(state=Game.game_state['waiting_for_players']).limit(5)
     games_in_progress = Game.query.filter(Game.state.in_([Game.game_state['player_one_turn'],
@@ -60,6 +61,7 @@ def register():
 
 @app.route("/game/new", methods=['GET', 'POST'])
 @login_required
+@not_in_game
 def new_game():
     if request.method == 'POST':
         form = forms.NewGameForm(request.form)
@@ -81,6 +83,7 @@ def new_game():
 
 @app.route("/game/<int:game_id>", methods=['GET'])
 @login_required
+@not_in_game
 def show_game(game_id):
     game = Game.query.get_or_404(game_id)
     return render_template('game.html', game=game)
