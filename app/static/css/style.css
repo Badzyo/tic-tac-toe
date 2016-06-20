@@ -18,3 +18,40 @@ body {
 .main-block {
     background-color: #f1f1f1;
 }
+
+*, *:before, *:after {
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+
+.tile-button {
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    vertical-align: middle;
+    border: 1px solid gray;
+    border-radius: 2px;
+    background-color: White;
+}
+
+.tile-button:focus {
+    outline: 0;
+}
+
+.tile-button:hover {
+    background-color: dodgerblue;
+    border-color: blue;
+}
+
+@media screen and (max-width: 555px) {
+    .tile-button {
+        width: 26px;
+        height: 26px;
+    }
+}

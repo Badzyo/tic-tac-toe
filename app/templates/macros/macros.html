@@ -60,3 +60,17 @@
       {% endfor %}
     </div>
 {% endmacro %}
+
+
+{# Renders game grid #}
+{% macro render_grid(game) %}
+    <div class="game-grid">
+    {% for y in range(game.field_size) %}
+            <div class="btn-group btn-group-justified" id="row-{{ y }}">
+            {% for x in range(game.field_size) %}
+                <button type="button" id="{{ x }}-{{ y }}" class="tile-button"></button>
+            {% endfor %}
+        </div>
+    {% endfor %}
+    </div>
+{% endmacro %}
