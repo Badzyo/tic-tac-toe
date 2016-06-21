@@ -4,6 +4,13 @@
 </form>
 {% endmacro %}
 
+{# Render bootstrap3 button #}
+{% macro render_button(action_url='', action_text='Submit', class_='', id_='', btn_class='btn btn-default') %}
+    <form method="POST" action="{{ action_url }}" class="{{ class_ }}">
+        <button type="submit" class="{{ btn_class }}" id="{{ id_ }}">{{ action_text }} </button>
+    </form>
+{% endmacro %}
+
 
 {# Renders field using bootstrap3 #}
 {% macro render_field(field) %}
@@ -36,7 +43,7 @@
       {% for game in games %}
       <a href="{{ url_for('show_game', game_id=game.id) }}" class="list-group-item">
         <h4 class="list-group-item-heading">
-        {% set relations = game.users | rejectattr('user_role', 'equalto', 0) | sort(attribute='user_role') %}
+        {% set relations = game.users | sort(attribute='user_role') %}
         {% for relation in relations %}
             {{ relation.user.username }}
             {% if loop.first %} vs {% endif %}

@@ -71,14 +71,65 @@ def new_game():
     if form.validate_on_submit():
         game = Game(field_size=form.size.data, win_length=form.rule.data)
         db.session.add(game)
+
+        # generate random players order in game
         user_order = random.choice([GameUser.user_game_role['player_one'],
                                     GameUser.user_game_role['player_two']])
+
         game_user = GameUser(user=current_user, game=game, user_role=user_order)
         db.session.add(game_user)
         db.session.commit()
         return redirect(url_for('show_game', game_id=game.id))
 
     return render_template('new_game.html', new_game_form=form)
+
+
+@app.route("/game/join/<int:game_id>", methods=['POST'])
+@login_required
+def join_game(game_id):
+    game = Game.query.get_or_404(game_id)
+    players = game.users.all()
+
+    # redirect back to the game if it's full
+    if len(players) != 1:
+        # TODO: Notify user
+        return redirect(url_for('show_game', game_id=game_id))
+
+    # check available player position in game
+    if players[0].user_game_role == GameUser.user_game_role['player_one']:
+        available_role = GameUser.user_game_role['player_two']
+    else:
+        available_role = GameUser.user_game_role['player_one']
+
+    game_user = GameUser(user=current_user, game=game, user_role=available_role)
+    db.session.add(game_user)
+    db.session.commit()
+    return redirect(url_for('show_game', game_id=game_id))
+
+
+@app.route("/game/flee", methods=['POST'])
+@login_required
+def flee_game():
+    game = current_user.current_game
+
+    # if there is no game to flee, redirect to homepage
+    if not game:
+        # TODO: Notify user
+        redirect(url_for('index'))
+
+    game.state = Game.game_state['finished']
+    opponent = game.users.filter(User != current_user).first()
+
+    # if there was a second player in a game, let him win
+    if opponent:
+        if opponent.user_role == GameUser.user_game_role['player_one']:
+            result = Game.game_result['player_one_win']
+        else:
+            result = Game.game_result['player_two_win']
+        game.result = result
+
+    db.session.commit()
+    return redirect(url_for('index'))
 
 
 @app.route("/game/<int:game_id>", methods=['GET'])

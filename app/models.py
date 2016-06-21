@@ -1,7 +1,6 @@
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.orm import exc, backref
-from sqlalchemy import and_, null
+from sqlalchemy.orm import exc
 from flask_login import UserMixin
 from app import app, db
 
@@ -67,13 +66,12 @@ class User(UserMixin, db.Model):
         """
         Returns user's current game, or None
         """
-        user_game = self.games.filter(and_(GameUser.user_role.in_([GameUser.user_game_role['player_one'],
-                                                                   GameUser.user_game_role['player_two']]),
-                                           (Game.state != Game.game_state['finished']))).first()
-        try:
-            return user_game.game
-        except AttributeError:
-            return None
+        # TODO: come up with a better solution, using join
+        user_games = self.games
+        for user_game in user_games:
+            if user_game.game.state != Game.game_state['finished']:
+                return user_game.game
+        return None
 
     def __repr__(self):
         return '{} <{}>'.format(self.username, self.email)
@@ -101,13 +99,15 @@ class Game(db.Model):
     users = db.relationship('GameUser', lazy='dynamic')
     moves = db.relationship('GameMove', backref='game', lazy='dynamic')
 
+    def __repr__(self):
+        return 'ID: {}, State: {}, Result: {}>'.format(self.id, self.state, self.result)
+
 
 class GameUser(db.Model):
     """
     Intermediary model for Games-to-Users many-to-many relation
     """
-    user_game_role = {'spectator': 0,
-                      'player_one': 1,
+    user_game_role = {'player_one': 1,
                       'player_two': 2}
 
     __tablename__ = 'game_users'
@@ -116,6 +116,9 @@ class GameUser(db.Model):
     user_role = db.Column(db.Integer)
     game = db.relationship('Game')
     user = db.relationship('User')
+
+    def __repr__(self):
+        return 'game_id: {}, user_id: {}, user_role: {}'.format(self.game_id, self.user_id, self.user_role)
 
 
 class GameMove(db.Model):
