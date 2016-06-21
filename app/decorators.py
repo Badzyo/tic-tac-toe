@@ -1,6 +1,6 @@
 from functools import wraps
 from flask_login import current_user
-from flask import redirect, url_for
+from flask import redirect, url_for, flash
 
 
 def not_in_game(func):
@@ -25,6 +25,7 @@ def not_in_game(func):
                     return func(*args, **kwargs)
             except KeyError:
                 pass
+            flash('You can not go away, while you are in game. Press "Flee" if you want to end the game')
             return redirect(url_for('show_game', game_id=game.id))
         else:
             return func(*args, **kwargs)

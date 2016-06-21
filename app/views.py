@@ -1,5 +1,5 @@
 import random
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, flash, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db, login_manager, forms
 from app.models import User, Game, GameUser, GameMove
@@ -29,6 +29,7 @@ def login():
         if user:
             login_user(user)
             return redirect(url_for('index'))
+        flash('Can not find this combination of username and password')
 
     return render_template('login.html', login_form=form)
 
@@ -54,6 +55,7 @@ def register():
 
     # Redirect to homepage, if user is successfully authenticated
     if current_user.is_authenticated:
+        flash('Welcome to the Tic-Tac-Toe!')
         return redirect(url_for('index'))
 
     return render_template('register.html', register_form=form)
@@ -92,7 +94,7 @@ def join_game(game_id):
 
     # redirect back to the game if it's full
     if len(players) != 1:
-        # TODO: Notify user
+        flash('Current game is already in progress')
         return redirect(url_for('show_game', game_id=game_id))
 
     # check available player position in game
@@ -114,7 +116,7 @@ def flee_game():
 
     # if there is no game to flee, redirect to homepage
     if not game:
-        # TODO: Notify user
+        flash('There is no game to flee')
         redirect(url_for('index'))
 
     game.state = Game.game_state['finished']
