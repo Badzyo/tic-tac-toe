@@ -15,7 +15,7 @@
         </h3>
         <div id="buttons">
             {% if current_user.id in game.users | map(attribute='user_id') %}
-                {% if game.state != 3 %}
+                {% if game.state != 2 %}
                     {% with flee_url = url_for('flee_game') %}
                     {{ render_button(action_url=flee_url, action_text='Flee', id_='flee-btn', btn_class='btn btn-info') }}
                     {% endwith %}

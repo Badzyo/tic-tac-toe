@@ -11,8 +11,7 @@ from app.decorators import not_in_game
 @not_in_game
 def index():
     games_in_wait = Game.query.filter_by(state=Game.game_state['waiting_for_players']).limit(5)
-    games_in_progress = Game.query.filter(Game.state.in_([Game.game_state['player_one_turn'],
-                                                          Game.game_state['player_two_turn']])).limit(5)
+    games_in_progress = Game.query.filter(Game.state == Game.game_state['in_progress']).limit(5)
     return render_template('index.html', games_in_progress=games_in_progress, games_in_wait=games_in_wait)
 
 
@@ -96,7 +95,7 @@ def join_game(game_id):
     if len(players) != 1:
         flash('Current game is already in progress')
         return redirect(url_for('show_game', game_id=game_id))
-
+    game.state = Game.game_state['in_progress']
     # check available player position in game
     if players[0].user_game_role == GameUser.user_game_role['player_one']:
         available_role = GameUser.user_game_role['player_two']
@@ -118,7 +117,7 @@ def flee_game():
     # if there is no game to flee, redirect to homepage
     if not game:
         flash('There is no game to flee')
-        redirect(url_for('index'))
+        return redirect(url_for('index'))
 
     game.state = Game.game_state['finished']
     opponent = game.users.filter(User != current_user).first()

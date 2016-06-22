@@ -82,9 +82,8 @@ class Game(db.Model):
     Model of a Game-entity
     """
     game_state = {'waiting_for_players': 0,
-                  'player_one_turn': 1,
-                  'player_two_turn': 2,
-                  'finished': 3}
+                  'in_progress': 1,
+                  'finished': 2}
 
     game_result = {'draw': 0,
                    'player_one_win': 1,
