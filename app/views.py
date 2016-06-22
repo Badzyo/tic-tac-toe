@@ -55,7 +55,7 @@ def register():
 
     # Redirect to homepage, if user is successfully authenticated
     if current_user.is_authenticated:
-        flash('Welcome to the Tic-Tac-Toe!')
+        flash('Welcome to the Tic-Tac-Toe!', 'success')
         return redirect(url_for('index'))
 
     return render_template('register.html', register_form=form)
@@ -106,6 +106,7 @@ def join_game(game_id):
     game_user = GameUser(user=current_user, game=game, user_role=available_role)
     db.session.add(game_user)
     db.session.commit()
+    flash('You joined this game!', 'success')
     return redirect(url_for('show_game', game_id=game_id))
 
 
