@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% from "macros/macros.html" import render_grid %}
 {% from "macros/macros.html" import render_button %}
+{% block js %}
+    {{ super() }}
+    <script src="/static/scripts/game.js"/>
+{% endblock %}
 {% block content %}
     <div class="main-block row col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2 col-xs-12">
         <h3>
