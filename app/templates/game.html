@@ -8,17 +8,20 @@
 {% block content %}
     <div class="main-block row col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2 col-xs-12">
         <h3>
-        {% set relations = game.users | sort(attribute='user_role') %}
-        {% for relation in relations %}
-            {{ relation.user.username }}
-            {% if loop.first %} vs {% endif %}
-        {% endfor %}
-        {% if relations | length == 1 %}
+        {% if game.player1 %}
+            {{ game.player1.username }}
+        {% else %}
+            ___
+        {% endif %}
+             vs
+        {% if game.player2 %}
+            {{ game.player2.username }}
+        {% else %}
             ___
         {% endif %}
         </h3>
         <div id="buttons">
-            {% if current_user.id in game.users | map(attribute='user_id') %}
+            {% if current_user.id == game.player1_id or current_user.id == game.player2_id %}
                 {% if game.state != 2 %}
                     {% with flee_url = url_for('flee_game') %}
                     {{ render_button(action_url=flee_url, action_text='Flee', id_='flee-btn', btn_class='btn btn-info') }}

@@ -12,7 +12,8 @@ class User(UserMixin, db.Model):
     password = db.Column('password', db.String(20))
     email = db.Column('email', db.String(50), unique=True, index=True)
     registered_on = db.Column('registered_on', db.DateTime, default=datetime.utcnow())
-    games = db.relationship('GameUser', lazy='dynamic')
+    games = db.relationship('Game', primaryjoin='or_(User.id==Game.player1_id, User.id==Game.player2_id)',
+                            lazy='dynamic')
 
     def __init__(self, username, password, email, registered=None):
         super().__init__()
@@ -66,12 +67,9 @@ class User(UserMixin, db.Model):
         """
         Returns user's current game, or None
         """
-        # TODO: come up with a better solution, using join
-        user_games = self.games
-        for user_game in user_games:
-            if user_game.game.state != Game.game_state['finished']:
-                return user_game.game
-        return None
+        finished = Game.game_state['finished']
+        game = self.games.filter(Game.state != finished).first()
+        return game
 
     def __repr__(self):
         return '{} <{}>'.format(self.username, self.email)
@@ -95,29 +93,14 @@ class Game(db.Model):
     win_length = db.Column(db.Integer)
     state = db.Column(db.Integer, default=game_state['waiting_for_players'])
     result = db.Column(db.Integer)
-    users = db.relationship('GameUser', lazy='dynamic')
+    player1_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    player2_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
+    player1 = db.relationship('User', foreign_keys='Game.player1_id')
+    player2 = db.relationship('User', foreign_keys='Game.player2_id')
     moves = db.relationship('GameMove', backref='game', lazy='dynamic')
 
     def __repr__(self):
         return 'ID: {}, State: {}, Result: {}>'.format(self.id, self.state, self.result)
-
-
-class GameUser(db.Model):
-    """
-    Intermediary model for Games-to-Users many-to-many relation
-    """
-    user_game_role = {'player_one': 1,
-                      'player_two': 2}
-
-    __tablename__ = 'game_users'
-    game_id = db.Column(db.Integer, db.ForeignKey('games.game_id'), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
-    user_role = db.Column(db.Integer)
-    game = db.relationship('Game')
-    user = db.relationship('User')
-
-    def __repr__(self):
-        return 'game_id: {}, user_id: {}, user_role: {}'.format(self.game_id, self.user_id, self.user_role)
 
 
 class GameMove(db.Model):

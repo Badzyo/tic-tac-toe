@@ -1,4 +1,4 @@
-from app.models import Game, User, GameUser, GameMove
+from app.models import Game, User, GameMove
 
 
 class ActiveGameHandler:
