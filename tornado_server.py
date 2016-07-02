@@ -9,7 +9,7 @@ def start_server(host='localhost', port=5000):
     wsgi_app = WSGIContainer(app)
 
     server = Application([
-        (r'/ws/game/(?P<game_id>\d+)', GameWSHandler),
+        (r'/ws/game/(?P<game_id>\d+)/(?P<player_number>\d+)', GameWSHandler),
         (r'.*', FallbackHandler, dict(fallback=wsgi_app)),
     ])
     server.listen(port=port, address=host)

@@ -136,7 +136,14 @@ def flee_game():
 @not_in_game
 def show_game(game_id):
     game = Game.query.get_or_404(game_id)
-    return render_template('game.html', game=game)
+    if game.player1_id == current_user.id:
+        player_number = 1
+    elif game.player2_id == current_user.id:
+        player_number = 2
+    else:
+        # Spectator
+        player_number = current_user.id + 100  # simple unique spectator id
+    return render_template('game.html', game=game, player_number=player_number)
 
 
 @login_manager.user_loader

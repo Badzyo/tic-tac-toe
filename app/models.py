@@ -58,7 +58,7 @@ class User(UserMixin, db.Model):
             If user is not found, returns None
         """
         try:
-            return cls.query.filter_by(id=user_id).first()
+            return cls.query.get(user_id)
         except exc.NoResultFound:
             return None
 
@@ -79,13 +79,17 @@ class Game(db.Model):
     """
     Model of a Game-entity
     """
-    game_state = {'waiting_for_players': 0,
-                  'in_progress': 1,
-                  'finished': 2}
+    game_state = {
+        'waiting_for_players': 0,
+        'in_progress': 1,
+        'finished': 2
+    }
 
-    game_result = {'draw': 0,
-                   'player_one_win': 1,
-                   'player_two_win': 2}
+    game_result = {
+        'draw': 0,
+        'player_one_win': 1,
+        'player_two_win': 2
+    }
 
     __tablename__ = 'games'
     id = db.Column('game_id', db.Integer, primary_key=True)
@@ -97,7 +101,16 @@ class Game(db.Model):
     player2_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
     player1 = db.relationship('User', foreign_keys='Game.player1_id')
     player2 = db.relationship('User', foreign_keys='Game.player2_id')
-    moves = db.relationship('GameMove', backref='game', lazy='dynamic')
+    moves = db.relationship('GameMove', backref='game', order_by='GameMove.id')
+
+    def get_player_by_number(self, player_number):
+        if player_number == 1:
+            return self.player1
+        elif player_number == 2:
+            return self.player2
+        else:
+            # spectator
+            return User.get_user_by_id(player_number - 100)
 
     def __repr__(self):
         return 'ID: {}, State: {}, Result: {}>'.format(self.id, self.state, self.result)
@@ -107,11 +120,15 @@ class GameMove(db.Model):
     """
     Model of player's move in a game
     """
-    move_type = {'player_one': 1,
-                 'player_two': 2}
+    player_numbers = {
+        'player_one': 1,
+        'player_two': 2
+    }
 
     __tablename__ = 'moves'
     id = db.Column('move_id', db.Integer, primary_key=True)
-    ordinal_number = db.Column(db.Integer)
     game_id = db.Column(db.Integer, db.ForeignKey('games.game_id'))
-    player = db.Column(db.Integer)
+    ordinal_number = db.Column(db.Integer)  # TODO: Remove it?
+    player_number = db.Column(db.Integer)
+    x = db.Column(db.Integer)
+    y = db.Column(db.Integer)
