@@ -1,3 +1,4 @@
+import sqlalchemy
 from app.models import Game, GameMove
 from app import db
 
@@ -6,10 +7,9 @@ class ActiveGameHandler:
     def __init__(self, game_id, player_number, socket):
         self.id = game_id
         self.game = Game.query.get(game_id)
+        db.session.expunge(self.game)
         self.started = False
         self.players = dict()
-        player = self.game.get_player_by_number(player_number)
-        self.players[player_number] = (socket, player)
         self.moves = self.game.moves
         self.max_moves = self.game.field_size ** 2
         self.field = GameField(self.game.field_size, self.moves)
@@ -23,7 +23,15 @@ class ActiveGameHandler:
         """
         Add new player's socket to the players dictionary
         """
+        if player_number in (1, 2):
+            db.session.add(self.game)
+            db.session.refresh(self.game)
+            db.session.expunge(self.game)
         player = self.game.get_player_by_number(player_number)
+        try:
+            db.session.expunge(player)
+        except sqlalchemy.exc.InvalidRequestError:
+            pass
         self.connect_notification(player, player_number)
         self.players[player_number] = (socket, player)
         self.send_game_data(player_number)
@@ -37,7 +45,7 @@ class ActiveGameHandler:
         """
         try:
             socket, player = self.players.pop(player_number, None)
-            print(player)  # TODO: remove
+            db.session.add(player)
             # notify all about disconnect
             self.disconnect_notification(player, player_number)
         except TypeError:
@@ -84,7 +92,6 @@ class ActiveGameHandler:
         data = self.init_message('initial')
         data['players'] = []
         data['spectators'] = []
-        print(self.players)
         for key, value in self.players.items():
             if key in (1, 2):
                 data['players'].append(value[1].username)

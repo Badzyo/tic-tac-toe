@@ -99,9 +99,9 @@ class Game(db.Model):
     result = db.Column(db.Integer)
     player1_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
     player2_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
-    player1 = db.relationship('User', foreign_keys='Game.player1_id')
-    player2 = db.relationship('User', foreign_keys='Game.player2_id')
-    moves = db.relationship('GameMove', backref='game', order_by='GameMove.id')
+    player1 = db.relationship('User', foreign_keys='Game.player1_id', lazy='subquery')
+    player2 = db.relationship('User', foreign_keys='Game.player2_id', lazy='subquery')
+    moves = db.relationship('GameMove', backref='game', order_by='GameMove.id', lazy='subquery')
 
     def get_player_by_number(self, player_number):
         if player_number == 1:
