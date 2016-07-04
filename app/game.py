@@ -24,8 +24,9 @@ class ActiveGameHandler:
         Add new player's socket to the players dictionary
         """
         player = self.game.get_player_by_number(player_number)
-        self.players[player_number] = (socket, player)
         self.connect_notification(player, player_number)
+        self.players[player_number] = (socket, player)
+        self.send_game_data(player_number)
         if not self.started:
             if {1, 2}.issubset(self.players):
                 self.start_game()
@@ -36,6 +37,7 @@ class ActiveGameHandler:
         """
         try:
             socket, player = self.players.pop(player_number, None)
+            print(player)  # TODO: remove
             # notify all about disconnect
             self.disconnect_notification(player, player_number)
         except TypeError:
@@ -55,7 +57,7 @@ class ActiveGameHandler:
         """
         data = self.init_message('disconnect')
         data['user'] = {
-            'name': player.username,
+            'username': player.username,
             'role': player_number
         }
         self.notify_all(data)
@@ -66,7 +68,7 @@ class ActiveGameHandler:
         """
         data = self.init_message('connect')
         data['user'] = {
-            'name': player.username,
+            'username': player.username,
             'role': player_number
         }
         self.notify_all(data)
@@ -82,7 +84,8 @@ class ActiveGameHandler:
         data = self.init_message('initial')
         data['players'] = []
         data['spectators'] = []
-        for key, value in self.players:
+        print(self.players)
+        for key, value in self.players.items():
             if key in (1, 2):
                 data['players'].append(value[1].username)
             else:
@@ -101,7 +104,6 @@ class ActiveGameHandler:
         Apply received move to the game,
         update game status, and then notify other users about this update
         """
-        # TODO:
         move = GameMove(game_id=self.game.id, player_number=player_number, x=cell[0], y=cell[1])
         self.moves.append(move)
         self.field.add_move(move)
@@ -170,13 +172,15 @@ class ActiveGameHandler:
         data = self.init_message('start')
         self.notify_all(data)
 
-    def flee(self, player, player_number):
+    def flee(self, player_number):
         """
-        Notify all about user's fleeing
+        Close socket and notify all about user's fleeing
         """
+        socket, player = self.players.pop(player_number, None)
+        socket.close(reason='Flee')
         data = self.init_message('flee')
         data['user'] = {
-            'name': player.username,
+            'username': player.username,
             'role': player_number
         }
         self.notify_all(data)

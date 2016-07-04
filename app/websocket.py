@@ -18,7 +18,7 @@ class GameWSHandler(WebSocketHandler):
         self.active_game.connect_user(self.player_number, self)
 
     def on_message(self, message):
-        raise NotImplementedError
+        print(message)  # for debug
 
     def on_close(self):
         # remove player from online players in active game
