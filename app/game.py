@@ -151,16 +151,19 @@ class ActiveGameHandler:
         else:
             self.current_player = (self.current_player % 2) + 1
 
-    def send_chat_message(self, sender_name, message):
+    def send_chat_message(self, player_number, message):
         """
         Send message to all online users in a game
         """
-        data = self.init_message('chat')
-        data['chat'] = {
-            'from': sender_name,
-            'text': message
-        }
-        self.notify_all(data)
+        player = self.players.get(player_number, None)
+        if player:
+            name = player[1]
+            data = self.init_message('chat')
+            data['chat'] = {
+                'from': name,
+                'text': message
+            }
+            self.notify_all(data)
 
     def start_game(self):
         """
