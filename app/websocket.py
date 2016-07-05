@@ -28,12 +28,13 @@ class GameWSHandler(WebSocketHandler):
         if self.active_game.is_empty:
             GameWSHandler._remove_active_game(self.active_game.id)
 
-    def _get_active_game(self, game_id):
+    @classmethod
+    def _get_active_game(cls, game_id):
         try:
-            active_game = GameWSHandler._active_games[game_id]
+            active_game = cls._active_games[game_id]
         except KeyError:
-            active_game = ActiveGameHandler(game_id=game_id, player_number=self.player_number, socket=self)
-            GameWSHandler._active_games[game_id] = active_game
+            active_game = ActiveGameHandler(game_id=game_id)
+            cls._active_games[game_id] = active_game
         return active_game
 
     @classmethod

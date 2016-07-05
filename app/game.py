@@ -1,19 +1,17 @@
 import sqlalchemy
-from app.models import Game, GameMove
+from app.models import Game, GameMove, User
 from app import db
 
 
 class ActiveGameHandler:
-    def __init__(self, game_id, player_number, socket):
+    def __init__(self, game_id):
         self.id = game_id
-        self.game = Game.query.get(game_id)
-        db.session.expunge(self.game)
+        self.game = IndependentGameObject(game_id)
         self.started = False
         self.players = dict()
-        self.moves = self.game.moves
         self.max_moves = self.game.field_size ** 2
-        self.field = GameField(self.game.field_size, self.moves)
-        self.current_player = 1
+        self.field = GameField(self.game.field_size, self.game.moves)
+        self.current_player = -1
 
     @property
     def is_empty(self):
@@ -23,17 +21,12 @@ class ActiveGameHandler:
         """
         Add new player's socket to the players dictionary
         """
-        if player_number in (1, 2):
-            db.session.add(self.game)
-            db.session.refresh(self.game)
-            db.session.expunge(self.game)
-        player = self.game.get_player_by_number(player_number)
-        try:
-            db.session.expunge(player)
-        except sqlalchemy.exc.InvalidRequestError:
-            pass
-        self.connect_notification(player, player_number)
-        self.players[player_number] = (socket, player)
+        if player_number in (1, 2) and self.players:
+            # to get second player name
+            self.game.refresh_from_db()
+        player_name = self.game.get_player_by_number(player_number)
+        self.connect_notification(player_name, player_number)
+        self.players[player_number] = (socket, player_name)
         self.send_game_data(player_number)
         if not self.started:
             if {1, 2}.issubset(self.players):
@@ -44,12 +37,11 @@ class ActiveGameHandler:
         Remove player's socket from the players dictionary
         """
         try:
-            socket, player = self.players.pop(player_number, None)
-            db.session.add(player)
+            socket, player_name = self.players.pop(player_number, None)
             # notify all about disconnect
-            self.disconnect_notification(player, player_number)
+            self.disconnect_notification(player_name, player_number)
         except TypeError:
-            # current player is not in players
+            # if current player is not in players
             pass
 
     def notify_all(self, message):
@@ -59,24 +51,24 @@ class ActiveGameHandler:
         for socket, _ in self.players.values():
             socket.write_message(message)
 
-    def disconnect_notification(self, player, player_number):
+    def disconnect_notification(self, player_name, player_number):
         """
         Notify other users in game about current user disconnect
         """
         data = self.init_message('disconnect')
         data['user'] = {
-            'username': player.username,
+            'username': player_name,
             'role': player_number
         }
         self.notify_all(data)
 
-    def connect_notification(self, player, player_number):
+    def connect_notification(self, player_name, player_number):
         """
         Notify other users in game about current user connect
         """
         data = self.init_message('connect')
         data['user'] = {
-            'username': player.username,
+            'username': player_name,
             'role': player_number
         }
         self.notify_all(data)
@@ -93,17 +85,12 @@ class ActiveGameHandler:
         data['players'] = []
         data['spectators'] = []
         for key, value in self.players.items():
+            player_name = value[1]
             if key in (1, 2):
-                data['players'].append(value[1].username)
+                data['players'].append(player_name)
             else:
-                data['spectators'].append(value[1].username)
-        data['moves'] = []
-        for move in self.moves:
-            data['moves'].append({
-                'x': move.x,
-                'y': move.y,
-                'player': move.player_number
-            })
+                data['spectators'].append(player_name)
+        data['moves'] = self.game.moves
         socket.write_message(data)
 
     def apply_move(self, player_number, cell):
@@ -111,19 +98,24 @@ class ActiveGameHandler:
         Apply received move to the game,
         update game status, and then notify other users about this update
         """
-        move = GameMove(game_id=self.game.id, player_number=player_number, x=cell[0], y=cell[1])
-        self.moves.append(move)
-        self.field.add_move(move)
+        if player_number != self.current_player:
+            # TODO: Notify player to wait for his turn
+            return
 
-        win_line = self.check_win()
+        move = GameMove(game_id=self.game.id, player_number=player_number, x=cell[0], y=cell[1])
+        self.game.add_move(move)
+        self.field.mark_cell(move)
+
+        win_line = self.check_win(move)
         if win_line:
             self.game.state = Game.game_state['finished']
             self.game.result = player_number
-        if len(self.moves) == self.max_moves and not win_line:
+        if len(self.game.moves) == self.max_moves and not win_line:
             self.game.state = Game.game_state['finished']
             self.game.result = Game.game_result['draw']
         self._set_next_player()
         if self.game.state == Game.game_state['finished']:
+            self.game.write_to_db()
             data = self.init_message('finish')
             data['finish'] = {
                 'result': self.game.result,
@@ -154,18 +146,18 @@ class ActiveGameHandler:
         """
         Change current_player to the next player after player's move
         """
-        if self.game.game_state == Game.game_state['finished']:
-            self.current_player = None
+        if self.game.state == Game.game_state['finished']:
+            self.current_player = -1
         else:
             self.current_player = (self.current_player % 2) + 1
 
-    def send_chat_message(self, sender, message):
+    def send_chat_message(self, sender_name, message):
         """
         Send message to all online users in a game
         """
         data = self.init_message('chat')
         data['chat'] = {
-            'from': sender.username,
+            'from': sender_name,
             'text': message
         }
         self.notify_all(data)
@@ -183,11 +175,11 @@ class ActiveGameHandler:
         """
         Close socket and notify all about user's fleeing
         """
-        socket, player = self.players.pop(player_number, None)
+        socket, player_name = self.players.pop(player_number, None)
         socket.close(reason='Flee')
         data = self.init_message('flee')
         data['user'] = {
-            'username': player.username,
+            'username': player_name,
             'role': player_number
         }
         self.notify_all(data)
@@ -198,16 +190,23 @@ class ActiveGameHandler:
         data['message'] = message
         return data
 
-    def check_win(self):
+    def check_win(self, move):
         """
         Finds out whether last move led to victory.
         If it was the winning move, returns a winning line
         """
-        move = self.moves[-1]
         for line in self.field.player_line_getters:
             if len(line(move)) >= self.game.win_length:
                 return line
         return False
+
+    def is_user_socket_valid(self, player_number, socket):
+        """
+        Returns False if current player's socket not equal to the socket stored in players list. Otherwise returns true
+        Added to prevent cheating with player substitution
+        """
+        socket_real = self.players.get(player_number, None)
+        return socket == socket_real
 
 
 class GameField:
@@ -223,13 +222,13 @@ class GameField:
         if moves:
             for move in moves:
                 try:
-                    self.grid[move.x][move.y] = move.player_number
+                    self.grid[move['x']][move['y']] = move['player']
                 except IndexError:
                     pass
 
-    def add_move(self, move):
+    def mark_cell(self, move):
         """
-        Place a new move at the grid
+        Mark cell as occupied by one of two players
         """
         try:
             self.grid[move.x][move.y] = move.player_number
@@ -331,3 +330,59 @@ class GameField:
             self.get_player_reverse_diagonal_line
         ]
         return getters
+
+
+class IndependentGameObject:
+    def __init__(self, game_id):
+        self.id = game_id
+        game = self.get_from_db()
+
+        try:
+            self.player1 = game.player1.username
+        except AttributeError:
+            self.player1 = None
+
+        try:
+            self.player2 = game.player2.username
+        except AttributeError:
+            self.player2 = None
+
+        self.field_size = game.field_size
+        self.win_length = game.win_length
+        self.state = game.state
+        self.result = game.result
+        self.moves = []
+        for move in game.moves:
+            self.add_move(move)
+
+    def refresh_from_db(self):
+        game = self.get_from_db()
+        self.player1 = game.player1.username
+        self.player2 = game.player2.username
+        self.state = game.state
+        self.result = game.result
+
+    def write_to_db(self):
+        game = self.get_from_db()
+        game.state = self.state
+        game.result = self.result
+        db.session.commit()
+
+    def get_from_db(self):
+        return Game.query.get(self.id)
+
+    def add_move(self, move):
+        self.moves.append({
+                'player': move.player_number,
+                'x': move.x,
+                'y': move.y
+        })
+
+    def get_player_by_number(self, player_number):
+        if player_number == 1:
+            return self.player1
+        elif player_number == 2:
+            return self.player2
+        else:
+            spectator = User.get_user_by_id(player_number - 100)
+            return spectator.username

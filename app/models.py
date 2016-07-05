@@ -103,15 +103,6 @@ class Game(db.Model):
     player2 = db.relationship('User', foreign_keys='Game.player2_id', lazy='subquery')
     moves = db.relationship('GameMove', backref='game', order_by='GameMove.id', lazy='subquery')
 
-    def get_player_by_number(self, player_number):
-        if player_number == 1:
-            return self.player1
-        elif player_number == 2:
-            return self.player2
-        else:
-            # spectator
-            return User.get_user_by_id(player_number - 100)
-
     def __repr__(self):
         return 'ID: {}, State: {}, Result: {}>'.format(self.id, self.state, self.result)
 
