@@ -102,7 +102,10 @@ class ActiveGameHandler:
             # TODO: Notify player to wait for his turn
             return
 
-        move = GameMove(game_id=self.game.id, player_number=player_number, x=cell[0], y=cell[1])
+        # TODO: validate cell data
+        x = int(cell[0])
+        y = int(cell[1])
+        move = GameMove(game_id=self.game.id, player_number=player_number, x=x, y=y)
         self.game.add_move(move)
         self.field.mark_cell(move)
 
@@ -202,14 +205,6 @@ class ActiveGameHandler:
             if len(line(move)) >= self.game.win_length:
                 return line
         return False
-
-    def is_user_socket_valid(self, player_number, socket):
-        """
-        Returns False if current player's socket not equal to the socket stored in players list. Otherwise returns true
-        Added to prevent cheating with player substitution
-        """
-        socket_real = self.players.get(player_number, None)
-        return socket == socket_real
 
 
 class GameField:
