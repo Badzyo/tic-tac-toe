@@ -49,6 +49,22 @@ body {
     border-color: blue;
 }
 
+.chatbox > .panel {
+    margin-bottom: 0.3em;
+}
+
+#chat {
+    max-height: 10em;
+    padding-left: 1em;
+    text-align: left;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#input-message {
+    padding-left: 0.7em;
+}
+
 @media screen and (max-width: 555px) {
     .tile-button {
         width: 26px;

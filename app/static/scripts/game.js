@@ -1,8 +1,40 @@
 var current_player = 2;
 
+function build_chat_row(name, text) {
+    var chat_row = document.createElement("div");
+    chat_row.className = "chat-row";
+
+    var chat_row_name = document.createElement("span");
+    chat_row_name.className = "chat-row-name";
+    chat_row_name.textContent = name + ": ";
+
+    var chat_row_text = document.createElement("span");
+    chat_row_text.className = "chat-row-text";
+    chat_row_text.textContent = text;
+
+    chat_row.appendChild(chat_row_name);
+    chat_row.appendChild(chat_row_text);
+    return chat_row;
+}
+
+function add_chat_message(data) {
+    var new_row = build_chat_row(data.chat.from, data.chat.text);
+    $("#chat").prepend(new_row);
+}
+
+function send_chat_message(socket, text) {
+    var data = {
+        message: "chat",
+        text: text
+    };
+    socket.send(JSON.stringify(data));
+}
+
 $(document).ready(function(){
 
     var ws = new WebSocket("ws://" + location.host + "/ws" + location.pathname + "/" + player_number);
+    var $input_message = $("#input-message");
+    var $chat_btn = $("#chat-send");
 
     ws.onmessage = function (msg) {
         var data = JSON.parse(msg.data);
@@ -33,8 +65,8 @@ $(document).ready(function(){
                 add_chat_message(data);
                 break;
             default:
-                console.log.error('Unknown message type received!')
-                console.log.error(data)
+                console.log.error('Unknown message type received!');
+                console.log.error(data);
         }
 
     };
@@ -48,7 +80,20 @@ $(document).ready(function(){
                 cell: e.target.id.split('-')
             };
             ws.send(JSON.stringify(data));
-        };
+        }
+    });
+
+    $input_message.keyup(function(event){
+        if(event.keyCode == 13){
+            $chat_btn.click();
+        }
+    });
+
+    $(document).on('click', '#chat-send', function(e){
+        if ($input_message.val()) {
+            send_chat_message(ws, $input_message.val());
+            $input_message.val("");
+        }
     });
 });
 
@@ -86,9 +131,3 @@ function flee(data) {
     // TODO
     console.log('Flee: ' + data.user.username);
 }
-
-function add_chat_message(data) {
-    // TODO
-    console.log(data.chat.from + ': ' + data.chat.text)
-}
-
