@@ -201,8 +201,9 @@ class ActiveGameHandler:
         Finds out whether last move led to victory.
         If it was the winning move, returns a winning line
         """
-        for line in self.field.player_line_getters:
-            if len(line(move)) >= self.game.win_length:
+        for getter in self.field.player_line_getters:
+            line = getter(move)
+            if len(line) >= self.game.win_length:
                 return line
         return False
 

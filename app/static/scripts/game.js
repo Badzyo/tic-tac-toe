@@ -36,6 +36,17 @@ function build_chat_row(name, text) {
     return chat_row;
 }
 
+function draw_tile_mark(move) {
+    tile_id = "#" + move.x + "-" + move.y;
+
+    if (move.player == 1){
+        mark = '<span class="fa fa-times x-mark" aria-hidden="true"></span>'
+    } else {
+        mark = '<span class="fa fa-circle-o o-mark" aria-hidden="true"></span>'
+    }
+    $(tile_id).append(mark);
+}
+
 function add_chat_message(data) {
     var new_row = build_chat_row(data.chat.from, data.chat.text);
     $("#chat").prepend(new_row);
@@ -47,6 +58,55 @@ function send_chat_message(socket, text) {
         text: text
     };
     socket.send(JSON.stringify(data));
+}
+
+function connect(data) {
+    // TODO
+    toastr.info(data.user.username + " is now online.");
+}
+
+function disconnect(data) {
+    // TODO
+    toastr.warning(data.user.username + " disconnected.");
+}
+
+function init_game(data) {
+    // TODO
+    console.log("Received initial data.");
+}
+
+function start_game() {
+    console.log('Game started!');
+    current_player = 1;
+
+    toastr.success("Game started!");
+    if (player_number == current_player) {
+        toastr.success("It's your turn.");
+    } else {
+        toastr.success("It's opponent's turn. Please, wait.");
+    }
+}
+
+function receive_move(data) {
+    move = data.move;
+    draw_tile_mark(move);
+
+    current_player = current_player % 2 + 1;
+    if (player_number == current_player) {
+        toastr.info("It's your turn now!")
+    }
+}
+
+function finish(data) {
+    move = data.move;
+    draw_tile_mark(move);
+    current_player = -1;
+    toastr.success('Game finished!');
+}
+
+function flee(data) {
+    // TODO
+    toastr.info('Flee: ' + data.user.username);
 }
 
 $(document).ready(function(){
@@ -116,45 +176,3 @@ $(document).ready(function(){
         }
     });
 });
-
-function connect(data) {
-    // TODO
-    toastr.info(data.user.username + " is now online.");
-}
-
-function disconnect(data) {
-    // TODO
-    toastr.warning(data.user.username + " disconnected.");
-}
-
-function init_game(data) {
-    // TODO
-    console.log("Received initial data.");
-}
-
-function start_game() {
-    console.log('Game started!');
-    current_player = 1;
-
-    toastr.success("Game started!");
-    if (player_number == current_player) {
-        toastr.success("It's your turn.");
-    } else {
-        toastr.success("It's opponent's turn. Please, wait.");
-    }
-}
-
-function receive_move(data) {
-    // TODO
-    console.log('New move received!');
-}
-
-function finish(data) {
-    // TODO
-    toastr.success('Game finished!');
-}
-
-function flee(data) {
-    // TODO
-    toastr.info('Flee: ' + data.user.username);
-}

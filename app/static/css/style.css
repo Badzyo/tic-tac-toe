@@ -49,6 +49,21 @@ body {
     border-color: blue;
 }
 
+.tile-button > span {
+    display: inline-block;
+    vertical-align: middle;
+    height: inherit;
+    font-size: 2.4em;
+}
+
+.x-mark {
+    color: blue;
+}
+
+.o-mark {
+    color: green;
+}
+
 .chatbox > .panel {
     margin-bottom: 0.3em;
 }
@@ -69,5 +84,9 @@ body {
     .tile-button {
         width: 26px;
         height: 26px;
+    }
+
+    .tile-button > span {
+        font-size: 1.1em;
     }
 }
