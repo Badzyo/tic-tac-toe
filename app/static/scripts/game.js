@@ -1,4 +1,20 @@
-var current_player = 2;
+var current_player = -1;
+
+function spawn_alert(message, type) {
+    var alert_div = document.createElement("div");
+    alert_div.classList.add("alert", "alert-"+type);
+    alert_div.id = "alert";
+    alert_div.role = "alert";
+    alert_div.textContent = message;
+
+    var alert_close = document.createElement("a");
+    alert_close.class = "close";
+    alert_close.setAttribute("data-dismiss", "alert");
+    alert_close.textContent = "&times;"
+
+    alert_div.appendChild(alert_close);
+    $(".alerts").prepend(alert_div);
+}
 
 function build_chat_row(name, text) {
     var chat_row = document.createElement("div");
@@ -99,22 +115,31 @@ $(document).ready(function(){
 
 function connect(data) {
     // TODO
-    console.log(data.user.username + " is now online.")
+    spawn_alert(data.user.username + " is now online.", "success");
+    console.log(data.user.username + " is now online.");
 }
 
 function disconnect(data) {
     // TODO
-    console.log(data.user.username + " disconnected.")
+    spawn_alert(data.user.username + " disconnected.", "warning");
+    console.log(data.user.username + " disconnected.");
 }
 
 function init_game(data) {
     // TODO
-    console.log("Received initial data.")
+    console.log("Received initial data.");
 }
 
 function start_game() {
     // TODO
     console.log('Game started!');
+    current_player = 1;
+    spawn_alert("Game started!", "success");
+    if (player_number == current_player) {
+        spawn_alert("It's your turn", "success");
+    } else {
+        spawn_alert("It's opponent's turn. Please, wait.", "warning");
+    }
 }
 
 function receive_move(data) {
