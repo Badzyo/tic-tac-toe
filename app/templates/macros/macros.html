@@ -85,21 +85,18 @@
     </div>
 {% endmacro %}
 
-
-{# Render flash messages #}
-{% macro render_messages() %}
+{# Init flash messages #}
+{% macro init_flash_messages() %}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
+            flash_messages = [
             {% for category, message in messages %}
-                {% if category == 'message' %}
-                  <div class="alert alert-warning" id="alert" role="alert">
-                {% else %}
-                  <div class="alert alert-{{ category }}" id="alert" role="alert">
-                {% endif %}
-                  <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                  {{ message }}
-                </div>
+                  {
+                    category: "{% if category == 'message' %}warning{% else %}{{ category }}{% endif %}",
+                    message: "{{ message }}"
+                  },
             {% endfor %}
+            ];
         {% endif %}
     {% endwith %}
 {% endmacro %}

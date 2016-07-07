@@ -1,20 +1,23 @@
 var current_player = -1;
 
-function spawn_alert(message, type) {
-    var alert_div = document.createElement("div");
-    alert_div.classList.add("alert", "alert-"+type);
-    alert_div.id = "alert";
-    alert_div.role = "alert";
-    alert_div.textContent = message;
-
-    var alert_close = document.createElement("a");
-    alert_close.class = "close";
-    alert_close.setAttribute("data-dismiss", "alert");
-    alert_close.textContent = "&times;"
-
-    alert_div.appendChild(alert_close);
-    $(".alerts").prepend(alert_div);
-}
+toastr.options = {
+  "closeButton": true,
+  "debug": false,
+  "newestOnTop": false,
+  "progressBar": false,
+  "positionClass": "toast-top-right",
+  "defaultPositionClass": "toast-top-right",
+  "preventDuplicates": false,
+  "onclick": null,
+  "showDuration": "300",
+  "hideDuration": "1000",
+  "timeOut": "8000",
+  "extendedTimeOut": "1000",
+  "showEasing": "swing",
+  "hideEasing": "linear",
+  "showMethod": "fadeIn",
+  "hideMethod": "fadeOut"
+};
 
 function build_chat_row(name, text) {
     var chat_row = document.createElement("div");
@@ -86,6 +89,7 @@ $(document).ready(function(){
         }
 
     };
+
     $(document).on('click', '.tile-button', function(e){
         // TODO
         if (player_number == current_player) {
@@ -115,14 +119,12 @@ $(document).ready(function(){
 
 function connect(data) {
     // TODO
-    spawn_alert(data.user.username + " is now online.", "success");
-    console.log(data.user.username + " is now online.");
+    toastr.info(data.user.username + " is now online.");
 }
 
 function disconnect(data) {
     // TODO
-    spawn_alert(data.user.username + " disconnected.", "warning");
-    console.log(data.user.username + " disconnected.");
+    toastr.warning(data.user.username + " disconnected.");
 }
 
 function init_game(data) {
@@ -131,14 +133,14 @@ function init_game(data) {
 }
 
 function start_game() {
-    // TODO
     console.log('Game started!');
     current_player = 1;
-    spawn_alert("Game started!", "success");
+
+    toastr.success("Game started!");
     if (player_number == current_player) {
-        spawn_alert("It's your turn", "success");
+        toastr.success("It's your turn.");
     } else {
-        spawn_alert("It's opponent's turn. Please, wait.", "warning");
+        toastr.success("It's opponent's turn. Please, wait.");
     }
 }
 
@@ -149,10 +151,10 @@ function receive_move(data) {
 
 function finish(data) {
     // TODO
-    console.log('Game finished!');
+    toastr.success('Game finished!');
 }
 
 function flee(data) {
     // TODO
-    console.log('Flee: ' + data.user.username);
+    toastr.info('Flee: ' + data.user.username);
 }
