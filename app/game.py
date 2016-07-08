@@ -82,13 +82,21 @@ class ActiveGameHandler:
         except KeyError:
             return
         data = self.init_message('initial')
+        data['current_player'] = self.current_player
         data['players'] = []
         data['spectators'] = []
+
+        for index, player_name in enumerate((self.game.player1, self.game.player2)):
+            player = {
+                'name': player_name,
+                'number': index + 1,
+                'online': (index + 1) in self.players
+            }
+            data['players'].append(player)
+
         for key, value in self.players.items():
             player_name = value[1]
-            if key in (1, 2):
-                data['players'].append(player_name)
-            else:
+            if key > 2:
                 data['spectators'].append(player_name)
         data['moves'] = self.game.moves
         socket.write_message(data)

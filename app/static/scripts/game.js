@@ -47,8 +47,17 @@ function draw_tile_mark(move) {
     $(tile_id).append(mark);
 }
 
+function update_players_list(players) {
+    var text = players[0].name + " vs " + players[1].name;
+    $('h3').text(text);
+}
+
+function update_spectators_list(user) {
+    return
+}
+
 function draw_line(id1, id2){
-        var min_width = 20;
+        var min_width = 12;
         var $t1 = $(id1);
         var $t2 = $(id2);
 
@@ -86,7 +95,7 @@ function draw_line(id1, id2){
 
         // draw line
         c.strokeStyle = '#f00';
-        c.lineWidth = 20;
+        c.lineWidth = min_width;
         c.beginPath();
         c.moveTo(ot1.x - p.x, ot1.y - p.y);
         c.lineTo(ot2.x - p.x, ot2.y - p.y);
@@ -119,6 +128,17 @@ function disconnect(data) {
 function init_game(data) {
     // TODO
     console.log("Received initial data.");
+    current_player = data.current_player;
+
+    update_players_list(data.players);
+
+    data.spectators.forEach(function(user_name) {
+        update_spectators_list(user_name);
+    });
+
+    data.moves.forEach(function(move) {
+        draw_tile_mark(move);
+    });
 }
 
 function start_game() {
@@ -145,11 +165,15 @@ function receive_move(data) {
 function finish(data) {
     move = data.move;
     draw_tile_mark(move);
-    var id1 = "#" + data.finish.win_line[0].x + "-" + data.finish.win_line[0].y;
-    var id2 = "#" + data.finish.win_line[1].x + "-" + data.finish.win_line[1].y;
-    draw_line(id1, id2);
+    if (data.finish.result != 0) {
+        var id1 = "#" + data.finish.win_line[0].x + "-" + data.finish.win_line[0].y;
+        var id2 = "#" + data.finish.win_line[1].x + "-" + data.finish.win_line[1].y;
+        draw_line(id1, id2);
+        toastr.info('Game finished!');
+    } else {
+        toastr.success('Draw!');
+    }
     current_player = -1;
-    toastr.success('Game finished!');
 }
 
 function flee(data) {
