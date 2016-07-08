@@ -48,6 +48,7 @@ function draw_tile_mark(move) {
 }
 
 function draw_line(id1, id2){
+        var min_width = 20;
         var $t1 = $(id1);
         var $t2 = $(id2);
 
@@ -60,7 +61,6 @@ function draw_line(id1, id2){
             x: $t2.offset().left + $t2.width() / 2,
             y: $t2.offset().top + $t2.height() / 2
         };
-
         // x,y = top left corner
         // x1,y1 = bottom right corner
         var p = {
@@ -69,11 +69,14 @@ function draw_line(id1, id2){
             y: ot1.y < ot2.y ? ot1.y : ot2.y,
             y1: ot1.y > ot2.y ? ot1.y : ot2.y
         };
-
         // create canvas between those points
+        var canvas_width = p.x1 - p.x;
+        var canvas_height = p.y1 - p.y;
+        canvas_width = (canvas_width > min_width) ? canvas_width : min_width;
+        canvas_height = (canvas_height > min_width) ? canvas_height : min_width;
         var c = $('<canvas/>').attr({
-            'width': p.x1 - p.x,
-            'height': p.y1 - p.y
+            'width': canvas_width,
+            'height': canvas_height
         }).css({
             'position': 'absolute',
             'left': p.x,
@@ -83,7 +86,7 @@ function draw_line(id1, id2){
 
         // draw line
         c.strokeStyle = '#f00';
-        c.lineWidth = 10;
+        c.lineWidth = 20;
         c.beginPath();
         c.moveTo(ot1.x - p.x, ot1.y - p.y);
         c.lineTo(ot2.x - p.x, ot2.y - p.y);
