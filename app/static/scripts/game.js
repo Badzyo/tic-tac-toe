@@ -47,6 +47,49 @@ function draw_tile_mark(move) {
     $(tile_id).append(mark);
 }
 
+function draw_line(id1, id2){
+        var $t1 = $(id1);
+        var $t2 = $(id2);
+
+        // find offset positions
+        var ot1 = {
+            x: $t1.offset().left + $t1.width() / 2,
+            y: $t1.offset().top + $t1.height() / 2
+        };
+        var ot2 = {
+            x: $t2.offset().left + $t2.width() / 2,
+            y: $t2.offset().top + $t2.height() / 2
+        };
+
+        // x,y = top left corner
+        // x1,y1 = bottom right corner
+        var p = {
+            x: ot1.x < ot2.x ? ot1.x : ot2.x,
+            x1: ot1.x > ot2.x ? ot1.x : ot2.x,
+            y: ot1.y < ot2.y ? ot1.y : ot2.y,
+            y1: ot1.y > ot2.y ? ot1.y : ot2.y
+        };
+
+        // create canvas between those points
+        var c = $('<canvas/>').attr({
+            'width': p.x1 - p.x,
+            'height': p.y1 - p.y
+        }).css({
+            'position': 'absolute',
+            'left': p.x,
+            'top': p.y,
+            'z-index': 1
+        }).appendTo($('body'))[0].getContext('2d');
+
+        // draw line
+        c.strokeStyle = '#f00';
+        c.lineWidth = 10;
+        c.beginPath();
+        c.moveTo(ot1.x - p.x, ot1.y - p.y);
+        c.lineTo(ot2.x - p.x, ot2.y - p.y);
+        c.stroke();
+}
+
 function add_chat_message(data) {
     var new_row = build_chat_row(data.chat.from, data.chat.text);
     $("#chat").prepend(new_row);
@@ -90,7 +133,6 @@ function start_game() {
 function receive_move(data) {
     move = data.move;
     draw_tile_mark(move);
-
     current_player = current_player % 2 + 1;
     if (player_number == current_player) {
         toastr.info("It's your turn now!")
@@ -100,6 +142,9 @@ function receive_move(data) {
 function finish(data) {
     move = data.move;
     draw_tile_mark(move);
+    var id1 = "#" + data.finish.win_line[0].x + "-" + data.finish.win_line[0].y;
+    var id2 = "#" + data.finish.win_line[1].x + "-" + data.finish.win_line[1].y;
+    draw_line(id1, id2);
     current_player = -1;
     toastr.success('Game finished!');
 }
