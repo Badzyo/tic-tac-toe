@@ -28,7 +28,7 @@ class ActiveGameHandler:
         self.connect_notification(player_name, player_number)
         self.players[player_number] = (socket, player_name)
         self.send_game_data(player_number)
-        if not self.started and self.game.state == Game.game_state['waiting_for_players']:
+        if (not self.started) and self.game.state != Game.game_state['finished']:
             if {1, 2}.issubset(self.players):
                 self.start_game()
 
