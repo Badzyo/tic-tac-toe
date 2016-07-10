@@ -24,7 +24,6 @@ class GameWSHandler(WebSocketHandler):
         self.active_game.connect_user(self.player_number, self)
 
     def on_message(self, message):
-        print(message)  # for debug
         msg = json.loads(message)
         try:
             msg_type = msg['message']

@@ -80,6 +80,89 @@ body {
     padding-left: 0.7em;
 }
 
+.players {
+    overflow: hidden;
+}
+
+.player-panel {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: 0;
+}
+
+#player1 {
+    padding-right: 0;
+}
+
+#player2 {
+    padding-left: 0;
+}
+
+.players-mid {
+    padding: 0;
+}
+
+.players > div > div > .panel-body {
+    padding: 10px;
+    font-weight: 700;
+}
+
+.players > div > div > .panel-heading {
+    padding: 5px;
+}
+
+.mid-button {
+    padding: 10px 10px 10px 10px;
+}
+
+.mid-button > a {
+    font-size: 1em;
+    font-weight: 500;
+    height: 31px;
+    line-height: normal;
+}
+
+.turn-timer {
+    line-height: normal;
+    font-size: 1.5em;
+    height: 26px;
+    font-weight: 700;
+}
+
+.close-btn {
+    font-size: 0.6em;
+}
+
+.game-rules {
+    margin-top: 1.2em;
+}
+
+.mid-arrows {
+    margin: 0;
+    height: 26px;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+.mid-arrows > .col {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.arrow > span {
+    vertical-align: middle;
+    font-weight: 800;
+    font-size: 1.3em;
+}
+
+.arrow {
+    opacity: 0;
+}
+
+.result-label {
+    margin-left: 0.3em;
+}
+
 @media screen and (max-width: 555px) {
     .tile-button {
         width: 26px;
@@ -88,5 +171,11 @@ body {
 
     .tile-button > span {
         font-size: 1.1em;
+    }
+
+    .mid-button > a {
+        font-size: 0.8em;
+        padding-left: 2px;
+        padding-right: 2px;
     }
 }

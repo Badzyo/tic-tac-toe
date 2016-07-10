@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% from "macros/macros.html" import render_grid %}
 {% from "macros/macros.html" import render_button %}
+{% from "macros/macros.html" import render_game_header %}
+{% from "macros/macros.html" import render_game_rules %}
 {% block title %}
 Game : TicTacToe
 {% endblock %}
@@ -9,49 +11,26 @@ Game : TicTacToe
     <script>
         var player_number = {{ player_number }};
         var game_id = {{ game.id }};
+        var game_state = {{ game.state }};
+        var game_result = {{ game.result }};
+{#        var game_result = {{ game.result if game.result else -1 }};#}
     </script>
     <script src="/static/scripts/game.js"></script>
 {% endblock %}
 {% block content %}
     <div class="main-block row col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2 col-xs-12">
-        <h3>
-        {% if game.player1 %}
-            {{ game.player1.username }}
-        {% else %}
-            ___
-        {% endif %}
-             vs
-        {% if game.player2 %}
-            {{ game.player2.username }}
-        {% else %}
-            ___
-        {% endif %}
-        </h3>
-        <div id="buttons">
-            {% if current_user.id == game.player1_id or current_user.id == game.player2_id %}
-                {% if game.state != 2 %}
-                    {% with flee_url = url_for('flee_game') %}
-                    {{ render_button(action_url=flee_url, action_text='Flee', id_='flee-btn', btn_class='btn btn-info') }}
-                    {% endwith %}
-                {% endif %}
-            {% else %}
-                {% if game.state == 0 %}
-                    {% with join_url = url_for('join_game', game_id=game.id) %}
-                    {{ render_button(action_url=join_url, action_text='Join this game', id_='join-btn', btn_class='btn btn-primary') }}
-                    {% endwith %}
-                {% endif %}
-            {% endif %}
-        </div>
+        {{ render_game_header(game, current_user) }}
         <div class="panel panel-default">
             <div class="panel-body">
                 {{ render_grid(game) }}
-                <p>Game state: {{ game.state }}</p>
-                <p>Game win length: {{ game.win_length }}</p
             </div>
+            {{ render_game_rules(game) }}
         </div>
-        <p>
-            <a href="{{ url_for('index') }}" >Go to homepage</a>
-        </p>
-    </div>
+
+        <div>
+
+        </div>
     {% include "_chat.html" %}
+    </div>
+
 {% endblock %}

@@ -101,7 +101,6 @@ def join_game(game_id):
         return redirect(url_for('show_game', game_id=game_id))
 
     db.session.commit()
-    flash('You joined this game!', 'success')
     return redirect(url_for('show_game', game_id=game_id))
 
 

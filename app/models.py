@@ -96,7 +96,7 @@ class Game(db.Model):
     field_size = db.Column(db.Integer)
     win_length = db.Column(db.Integer)
     state = db.Column(db.Integer, default=game_state['waiting_for_players'])
-    result = db.Column(db.Integer)
+    result = db.Column(db.Integer, default=-1)
     player1_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
     player2_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=True)
     player1 = db.relationship('User', foreign_keys='Game.player1_id', lazy='subquery')

@@ -28,7 +28,7 @@ class ActiveGameHandler:
         self.connect_notification(player_name, player_number)
         self.players[player_number] = (socket, player_name)
         self.send_game_data(player_number)
-        if not self.started:
+        if not self.started and self.game.state == Game.game_state['waiting_for_players']:
             if {1, 2}.issubset(self.players):
                 self.start_game()
 
@@ -57,8 +57,9 @@ class ActiveGameHandler:
         """
         data = self.init_message('disconnect')
         data['user'] = {
-            'username': player_name,
-            'role': player_number
+            'name': player_name,
+            'player_number': player_number,
+            'online': False
         }
         self.notify_all(data)
 
@@ -68,8 +69,9 @@ class ActiveGameHandler:
         """
         data = self.init_message('connect')
         data['user'] = {
-            'username': player_name,
-            'role': player_number
+            'name': player_name,
+            'player_number': player_number,
+            'online': True
         }
         self.notify_all(data)
 
@@ -89,7 +91,7 @@ class ActiveGameHandler:
         for index, player_name in enumerate((self.game.player1, self.game.player2)):
             player = {
                 'name': player_name,
-                'number': index + 1,
+                'player_number': index + 1,
                 'online': (index + 1) in self.players
             }
             data['players'].append(player)
@@ -190,11 +192,11 @@ class ActiveGameHandler:
         Close socket and notify all about user's fleeing
         """
         socket, player_name = self.players.pop(player_number, None)
-        socket.close(reason='Flee')
         data = self.init_message('flee')
         data['user'] = {
-            'username': player_name,
-            'role': player_number
+            'name': player_name,
+            'player_number': player_number,
+            'online': False
         }
         self.notify_all(data)
 
@@ -364,8 +366,10 @@ class IndependentGameObject:
 
     def refresh_from_db(self):
         game = self.get_from_db()
-        self.player1 = game.player1.username
-        self.player2 = game.player2.username
+        if game.player1_id:
+            self.player1 = game.player1.username
+        if game.player2_id:
+            self.player2 = game.player2.username
         self.state = game.state
         self.result = game.result
 

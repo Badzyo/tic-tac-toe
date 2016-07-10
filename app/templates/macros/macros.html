@@ -4,11 +4,17 @@
 </form>
 {% endmacro %}
 
+
 {# Render bootstrap3 button #}
 {% macro render_button(action_url='', action_text='Submit', class_='', id_='', btn_class='btn btn-default') %}
     <form method="POST" action="{{ action_url }}" class="{{ class_ }}">
         <button type="submit" class="{{ btn_class }}" id="{{ id_ }}">{{ action_text }} </button>
     </form>
+{% endmacro %}
+
+{# Render empty post form #}
+{% macro render_post_form(action_url='', id_='') %}
+    <form method="POST" action="{{ action_url }}" id="{{ id_ }}"></form>
 {% endmacro %}
 
 
@@ -85,6 +91,7 @@
     </div>
 {% endmacro %}
 
+
 {# Init flash messages #}
 {% macro init_flash_messages() %}
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -99,4 +106,94 @@
             ];
         {% endif %}
     {% endwith %}
+{% endmacro %}
+
+
+{# Render Join or Flee buttons #}
+{% macro render_mid_button(game, user) %}
+<div class="mid-button">
+
+    {% if user.id == game.player1_id or user.id == game.player2_id %}
+        {% if game.state != 2 %}
+            {% with flee_url = url_for('flee_game') %}
+            <a class="btn btn-block btn-info" id="flee-btn">FLEE</a>
+            {{ render_post_form(flee_url, "flee-form") }}
+            {% endwith %}
+        {% endif %}
+    {% else %}
+        {% if game.state == 0 %}
+            {% with join_url = url_for('join_game', game_id=game.id) %}
+            <a class="btn btn-block btn-primary" id="join-btn">JOIN</a>
+            {{ render_post_form(join_url, "join-form") }}
+            {% endwith %}
+        {% endif %}
+    {% endif %}
+    {% if game.state == 2 %}
+        {% with index_url = url_for('index') %}
+            <a href="{{ index_url }}" class="btn btn-block btn-primary" id="join-btn">BACK</a>
+        {% endwith %}
+    {% endif %}
+</div>
+{% endmacro %}
+
+
+{# Renders game header with players names, timer and buttons #}
+{% macro render_game_header(game, user) %}
+<div class="row players">
+    <div class="col col-lg-5 col-md-5 col-xs-5" id="player1">
+        <div class="player-panel panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">1st player</h3>
+          </div>
+          <div class="panel-body">
+            {% if game.player1 %}
+                {{ game.player1.username }}
+            {% else %}
+                ___
+            {% endif %}
+          </div>
+        </div>
+    </div>
+    <div class="col col-lg-2 col-md-2 col-xs-2 players-mid">
+        <div class="row mid-arrows">
+            <div class="col col-xs-2 arrow arrow1">
+                <span class="fa fa-chevron-left" aria-hidden="true"></span>
+            </div>
+            <div class="col col-xs-8">
+                <div class="turn-timer">00</div>
+            </div>
+            <div class="col col-xs-2 arrow arrow2">
+                <span class="fa fa-chevron-right" aria-hidden="true"></span>
+            </div>
+        </div>
+        {{ render_mid_button(game, user) }}
+    </div>
+    <div class="col col-lg-5 col-md-5 col-xs-5" id="player2">
+        <div class="player-panel panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">2nd player</h3>
+          </div>
+          <div class="panel-body">
+            {% if game.player2 %}
+                {{ game.player2.username }}
+            {% else %}
+                ___
+            {% endif %}
+          </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+
+{# Renders game rules #}
+{% macro render_game_rules(game) %}
+    {% if game.state != 2 %}
+        <div class="alert alert-dismissible alert-success game-rules">
+            <button type="button" class="close" data-dismiss="alert">
+                <span class="fa fa-times close-btn"></span>
+            </button>
+          <strong>Goal:</strong> {{ game.win_length }} in line
+        </div>
+    {% endif %}
 {% endmacro %}

@@ -1,23 +1,6 @@
 var current_player = -1;
-
-toastr.options = {
-  "closeButton": true,
-  "debug": false,
-  "newestOnTop": false,
-  "progressBar": false,
-  "positionClass": "toast-top-right",
-  "defaultPositionClass": "toast-top-right",
-  "preventDuplicates": false,
-  "onclick": null,
-  "showDuration": "300",
-  "hideDuration": "1000",
-  "timeOut": "8000",
-  "extendedTimeOut": "1000",
-  "showEasing": "swing",
-  "hideEasing": "linear",
-  "showMethod": "fadeIn",
-  "hideMethod": "fadeOut"
-};
+var $win_label = $('<span class="label label-success result-label">Winner</span>');
+var $lose_label = $('<span class="label label-info result-label">Loser</span>');
 
 function build_chat_row(name, text) {
     var chat_row = document.createElement("div");
@@ -47,13 +30,41 @@ function draw_tile_mark(move) {
     $(tile_id).append(mark);
 }
 
-function update_players_list(players) {
-    var text = players[0].name + " vs " + players[1].name;
-    $('h3').text(text);
+function show_arrow(number) {
+    $('.arrow'+number).css({ 'opacity' : 1 });
+}
+
+function hide_arrow(number) {
+    $('.arrow'+number).css({ 'opacity' : 0 });
+}
+
+function show_result(result, player_number) {
+    $('#player' + player_number + '>div>div>h3')
+        .append((result == player_number) ? $win_label : $lose_label);
+}
+
+function show_results(result, players) {
+    players.forEach(function(player){
+        show_result(result, player);
+    });
+}
+
+function update_player_status(player) {
+    var panel_id = '#player' + player.player_number;
+    $(panel_id + '>div>.panel-body').text(player.name ? player.name : '___');
+    $(panel_id + '>div>div>h3').text(player.online ? "online" : "offline");
+    $(panel_id + '>.player-panel')
+        .removeClass('panel-primary panel-danger')
+        .addClass(player.online ? "panel-primary" : "panel-danger");
+
+    if ($.inArray(game_result, [1, 2]) >= 0) {
+        show_results(game_result, [player.player_number]);
+    }
 }
 
 function update_spectators_list(user) {
-    return
+    // TODO
+    return;
 }
 
 function draw_line(id1, id2){
@@ -116,21 +127,24 @@ function send_chat_message(socket, text) {
 }
 
 function connect(data) {
-    // TODO
-    toastr.info(data.user.username + " is now online.");
+    if (data.user.player_number < 3) {
+        update_player_status(data.user);
+    } else {
+        toastr.info(data.user.name + " is watching the game.");
+    }
 }
 
 function disconnect(data) {
-    // TODO
-    toastr.warning(data.user.username + " disconnected.");
+    if (data.user.player_number < 3) {
+        update_player_status(data.user);
+    }
 }
 
 function init_game(data) {
-    // TODO
-    console.log("Received initial data.");
     current_player = data.current_player;
+    show_arrow(current_player);
 
-    update_players_list(data.players);
+    data.players.forEach(update_player_status);
 
     data.spectators.forEach(function(user_name) {
         update_spectators_list(user_name);
@@ -142,9 +156,9 @@ function init_game(data) {
 }
 
 function start_game() {
-    console.log('Game started!');
     current_player = 1;
-
+    game_state = 1;
+    show_arrow(current_player);
     toastr.success("Game started!");
     if (player_number == current_player) {
         toastr.success("It's your turn.");
@@ -156,13 +170,17 @@ function start_game() {
 function receive_move(data) {
     move = data.move;
     draw_tile_mark(move);
+    hide_arrow(current_player);
     current_player = current_player % 2 + 1;
+    show_arrow(current_player);
     if (player_number == current_player) {
         toastr.info("It's your turn now!")
     }
 }
 
 function finish(data) {
+    game_state = 2;
+    game_result = data.finish.result;
     move = data.move;
     draw_tile_mark(move);
     if (data.finish.result != 0) {
@@ -173,15 +191,23 @@ function finish(data) {
     } else {
         toastr.success('Draw!');
     }
+    show_results(data.finish.result, [1, 2]);
+    hide_arrow(current_player);
+    $('#flee-btn').remove();
+    $('.mid-button').wrapInner('<a href="/" class="btn btn-block btn-primary" id="join-btn">BACK</a>');
     current_player = -1;
 }
 
 function flee(data) {
-    // TODO
-    toastr.info('Flee: ' + data.user.username);
+    game_state = 2;
+    game_result = data.finish.result;
+    show_results(data.finish.result, [1, 2]);
+    update_player_status(data.user);
+    toastr.info('Opponent has left the game. You win!');
 }
 
 $(document).ready(function(){
+    game_result = (game_result == 'None') ? -1 : game_result;
 
     var ws = new WebSocket("ws://" + location.host + "/ws" + location.pathname + "/" + player_number);
     var $input_message = $("#input-message");
@@ -189,7 +215,6 @@ $(document).ready(function(){
 
     ws.onmessage = function (msg) {
         var data = JSON.parse(msg.data);
-        console.log(data); // for debug
         switch (data.message) {
             case 'connect':
                 connect(data);
@@ -246,5 +271,17 @@ $(document).ready(function(){
             send_chat_message(ws, $input_message.val());
             $input_message.val("");
         }
+    });
+
+    $(document).on('click', '#flee-btn', function(e){
+        var data = {
+            message: "flee"
+        };
+        ws.send(JSON.stringify(data));
+        $('#flee-form').submit();
+    });
+
+    $(document).on('click', '#join-btn', function(e){
+        $('#join-form').submit();
     });
 });
