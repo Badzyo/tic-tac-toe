@@ -23,9 +23,9 @@ function draw_tile_mark(move) {
     tile_id = "#" + move.x + "-" + move.y;
 
     if (move.player == 1){
-        mark = '<span class="fa fa-times x-mark" aria-hidden="true"></span>'
+        mark = '<span class="fa fa-times x-mark" id="mark" aria-hidden="true"></span>'
     } else {
-        mark = '<span class="fa fa-circle-o o-mark" aria-hidden="true"></span>'
+        mark = '<span class="fa fa-circle-o o-mark" id="mark" aria-hidden="true"></span>'
     }
     $(tile_id).append(mark);
 }
@@ -248,8 +248,8 @@ $(document).ready(function(){
     };
 
     $(document).on('click', '.tile-button', function(e){
-        // TODO
-        if (player_number == current_player) {
+        if ((e.target.id != 'mark') && (e.target.innerHTML.length == 0)) {
+            if (player_number == current_player) {
             var data = {
                 message: 'move',
                 game: game_id,
@@ -257,7 +257,9 @@ $(document).ready(function(){
                 cell: e.target.id.split('-')
             };
             ws.send(JSON.stringify(data));
+            }
         }
+
     });
 
     $input_message.keyup(function(event){

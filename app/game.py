@@ -112,9 +112,19 @@ class ActiveGameHandler:
             # TODO: Notify player to wait for his turn
             return
 
-        # TODO: validate cell data
-        x = int(cell[0])
-        y = int(cell[1])
+        try:
+            x = int(cell[0])
+            y = int(cell[1])
+            assert(x in range(self.game.field_size))
+            assert(y in range(self.game.field_size))
+        except (IndexError, ValueError, AssertionError) as e:
+            # the cell data is invalid
+            return
+
+        if self.field.cell_is_not_empty((x, y)):
+            # the cell is already occupied
+            return
+
         move = GameMove(game_id=self.game.id, player_number=player_number, x=x, y=y)
         self.game.add_move(move)
         self.field.mark_cell(move)
@@ -243,6 +253,12 @@ class GameField:
             self.grid[move.x][move.y] = move.player_number
         except IndexError:
             pass
+
+    def cell_is_not_empty(self, cell):
+        """
+        Returns True if the cell is occupied
+        """
+        return self.grid[cell[0]][cell[1]] != 0
 
     def get_player_row_line(self, move):
         """
