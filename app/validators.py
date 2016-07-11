@@ -40,3 +40,22 @@ class UniqueEmailValidator:
         if emails_found > 0:
             message = self.message
             raise ValidationError(message.format(url_for('login')))
+
+
+class GameCreationFormSizeValidator:
+    """
+    Raises an error if a size field less then rule field (win length)
+    """
+    def __init__(self):
+        self.win_length_filedname = 'rule'
+
+    def __call__(self, form, field):
+        size = field.data
+        win_length = form[self.win_length_filedname].data
+        if size < win_length:
+            self.message = "Grid size can't be less then win condition length"
+            raise ValidationError(self.message)
+
+        if win_length == 3 and size > 3:
+            self.message = "Obviously a winning situation for first player. Grid size > 3 and win condition is 3 in row"
+            raise ValidationError(self.message)

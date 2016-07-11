@@ -1,7 +1,7 @@
 from flask_wtf import Form
 from wtforms import StringField, PasswordField, SelectField
 from wtforms.validators import DataRequired, Length, EqualTo, Email
-from app.validators import UniqueUserNameValidator, UniqueEmailValidator
+from app.validators import UniqueUserNameValidator, UniqueEmailValidator, GameCreationFormSizeValidator
 
 
 class LoginForm(Form):
@@ -31,5 +31,6 @@ class NewGameForm(Form):
     rules = [(3, '3 in row'),
              (4, '4 in row'),
              (5, '5 in row')]
-    size = SelectField('Size of the game field', default=3, choices=sizes, coerce=int)
     rule = SelectField('Winning rule', default=3, choices=rules, coerce=int)
+    size = SelectField('Size of the game field', default=3, choices=sizes, coerce=int,
+                       validators=[GameCreationFormSizeValidator()])
