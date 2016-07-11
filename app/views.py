@@ -145,6 +145,25 @@ def show_game(game_id):
     return render_template('game.html', game=game, player_number=player_number)
 
 
+@app.route("/profile", methods=['GET'])
+@login_required
+@not_in_game
+def user_profile():
+    finished = Game.game_state['finished']
+    games = current_user.games.filter(Game.state == finished).limit(5)
+    return render_template('profile.html', games=games)
+
+
+@app.route("/gamearchive/<int:game_id>", methods=['GET'])
+@login_required
+@not_in_game
+def show_archived_game(game_id):
+    game = Game.query.get_or_404(game_id)
+    player_number = current_user.id + 100  # unique spectator id
+    return render_template('arch_game.html', game=game, player_number=player_number)
+
+
+
 @login_manager.user_loader
 def load_user(userid):
     return User.get_user_by_id(userid)
