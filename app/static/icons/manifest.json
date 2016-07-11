@@ -1,0 +1,7 @@
+{
+	"name": "Tic-tac-toe",
+	"icons": [
+	],
+	"theme_color": "#ffffff",
+	"display": "standalone"
+}
