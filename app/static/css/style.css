@@ -29,6 +29,15 @@ body {
     margin-bottom: 0.8em;
 }
 
+.nav-tabs > li, .nav-pills > li {
+    float:none;
+    display:inline-block;
+}
+
+.nav-tabs, .nav-pills {
+    text-align:center;
+}
+
 /* GAME PAGE */
 .tile-button {
     width: 42px;

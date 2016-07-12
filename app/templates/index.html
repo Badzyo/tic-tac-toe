@@ -19,24 +19,24 @@ Main : TicTacToe
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs" role="tablist">
                         <li role="presentation" class="active">
-                            <a href="#games-in-progress" aria-controls="games-wait" role="tab" data-toggle="tab">
-                                In progress
+                            <a href="#games-wait" aria-controls="games-in-progress" role="tab" data-toggle="tab">
+                                Waiting for opponent
                             </a>
                         </li>
                         <li role="presentation">
-                            <a href="#games-wait" aria-controls="games-in-progress" role="tab" data-toggle="tab">
-                                Waiting for opponent
+                            <a href="#games-in-progress" aria-controls="games-wait" role="tab" data-toggle="tab">
+                                In progress
                             </a>
                         </li>
                     </ul>
 
                     <!-- Tab panes -->
                     <div class="tab-content">
-                        <div role="tabpanel" class="tab-pane" id="games-wait">
-                            {{ render_game_list(games_in_wait) }}
-                        </div>
-                        <div role="tabpanel" class="tab-pane active" id="games-in-progress">
+                        <div role="tabpanel" class="tab-pane" id="games-in-progress">
                             {{ render_game_list(games_in_progress) }}
+                        </div>
+                        <div role="tabpanel" class="tab-pane active" id="games-wait">
+                            {{ render_game_list(games_in_wait) }}
                         </div>
                     </div>
                 </div>
@@ -44,4 +44,9 @@ Main : TicTacToe
             </div>
         </div>
     </div>
+    <script>
+        $(document).on('click', '#join-btn', function(e){
+            $('#' + $(this).attr('form-id')).submit();
+        });
+    </script>
 {% endblock %}

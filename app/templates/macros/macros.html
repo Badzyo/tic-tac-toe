@@ -62,15 +62,21 @@
             {% endif %}
             </h4>
             <p class="list-group-item-text">
-                <p> Game size: {{ game.field_size }} </p>
-                <p> Win row length: {{ game.win_length }}</p>
-                <a class="btn btn-default btn-block" href="{{ url_for('show_game', game_id=game.id) }}">
-                    {% if game.state == 0 %}
-                        Join game
-                    {% else %}
-                        Watch game
-                    {% endif %}
-                </a>
+                <p> Grid size: {{ game.field_size }}&times;{{ game.field_size }} </p>
+                <p> Rule: {{ game.win_length }}-in-row</p>
+                <div class="btn-group btn-group-justified">
+                    <a class="btn btn-success btn-block" href="{{ url_for('show_game', game_id=game.id) }}">
+                        Watch
+                    </a>
+                {% if game.state == 0 %}
+                    <a class="btn btn-block btn-primary" id="join-btn" form-id="{{ game.id }}">
+                        JOIN
+                    </a>
+                {% endif %}
+            </div>
+            {% with join_url = url_for('join_game', game_id=game.id) %}
+            {{ render_post_form(join_url, game.id) }}
+            {% endwith %}
             </p>
         </div>
       {% endfor %}
