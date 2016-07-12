@@ -1,6 +1,7 @@
 import random
 from flask import render_template, redirect, flash, url_for, request
 from flask_login import login_user, logout_user, current_user, login_required
+from sqlalchemy import desc
 from app import app, db, login_manager, forms
 from app.models import User, Game, GameMove
 from app.decorators import not_in_game
@@ -145,13 +146,18 @@ def show_game(game_id):
     return render_template('game.html', game=game, player_number=player_number)
 
 
-@app.route("/profile", methods=['GET'])
+@app.route("/profile/<int:user_id>", methods=['GET'])
 @login_required
 @not_in_game
-def user_profile():
+def user_profile(user_id):
+    last_games_limit = 25
     finished = Game.game_state['finished']
-    games = current_user.games.filter(Game.state == finished).limit(5)
-    return render_template('profile.html', games=games)
+    user = User.get_user_by_id(user_id)
+    games = user.games.filter(Game.state == finished)\
+        .filter(Game.player1_id)\
+        .filter(Game.player2_id)\
+        .order_by(desc(Game.id)).limit(last_games_limit)
+    return render_template('profile.html', games=games, user=user)
 
 
 @app.route("/gamearchive/<int:game_id>", methods=['GET'])

@@ -106,6 +106,27 @@ class Game(db.Model):
     def __repr__(self):
         return 'ID: {}, State: {}, Result: {}>'.format(self.id, self.state, self.result)
 
+    def get_opponent(self, player):
+        """
+        Returns an opponent user object
+        :param player: one of two players in a game
+        """
+        if self.player1_id == player.id and self.player2_id:
+            return self.player2
+        elif self.player2_id == player.id and self.player1_id:
+            return self.player1
+        else:
+            return None
+
+    @property
+    def winner_id(self):
+        if self.result == self.game_result['player_one_win']:
+            return self.player1_id
+        elif self.result == self.game_result['player_two_win']:
+            return self.player2_id
+        else:
+            return None
+
 
 class GameMove(db.Model):
     """

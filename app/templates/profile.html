@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+{% from "macros/macros.html" import render_games_table %}
 {% block title %}
-    {{ current_user.username }}: TicTacToe
+    {{ user.username }}: TicTacToe
+{% endblock %}
+{% block content %}
+    <h3>{{ user.username }} Profile</h3>
+    <a href="{{ url_for('index') }}" class="btn btn-default">Back to main</a>
+    <h4>Latest games:</h4>
+    {{ render_games_table(games, user) }}
 {% endblock %}
