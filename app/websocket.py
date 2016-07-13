@@ -1,4 +1,6 @@
 import json
+import datetime
+from tornado.ioloop import IOLoop
 from tornado.websocket import WebSocketHandler
 from app.game import ActiveGameHandler
 
@@ -10,6 +12,7 @@ class GameWSHandler(WebSocketHandler):
         WebSocketHandler.__init__(self, application, request, **kwargs)
         self.active_game = None
         self.player_number = None
+        self.ping_interval = 10
         self.message_handlers = {
             'move': self.handle_move,
             'chat': self.handle_chat,
@@ -40,6 +43,13 @@ class GameWSHandler(WebSocketHandler):
         # remove current active game from the list if all players and spectators are disconnected
         if self.active_game.is_empty:
             GameWSHandler._remove_active_game(self.active_game.id)
+
+    def _ping(self):
+        """
+        Periodically ping connection to keep it alive
+        """
+        self.ping(b'ping')
+        IOLoop.instance().add_timeout(datetime.timedelta(seconds=self.ping_interval), self._ping)
 
     @classmethod
     def _get_active_game(cls, game_id):
