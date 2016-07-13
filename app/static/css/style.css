@@ -2,7 +2,7 @@ body {
     text-align: center;
     font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 1.7em;
-    line-height: 1;
+    line-height: 1.9em;
     color: #666666;
     margin: 0;
 }
@@ -170,6 +170,10 @@ body {
 
 .result-label {
     margin-left: 0.3em;
+}
+
+.game-grid {
+    line-height: 1em;
 }
 
 @media screen and (max-width: 555px) {

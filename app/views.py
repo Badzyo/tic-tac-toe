@@ -93,7 +93,6 @@ def join_game(game_id):
     if game.player1_id and game.player2:
         # redirect back to the game if it's full
         flash('Current game is already in progress')
-        print(game_id)
         return redirect(url_for('show_game', game_id=game_id))
 
     # check available player position in game
@@ -104,7 +103,6 @@ def join_game(game_id):
 
     game.state = Game.game_state['in_progress']
     db.session.commit()
-    print(game_id)
     return redirect(url_for('show_game', game_id=game_id))
 
 
