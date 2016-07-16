@@ -1,5 +1,31 @@
 <div class="chatbox">
-    <div class="panel panel-default pre-scrollable" id="chat"></div>
+    <div class="row">
+            <div class="col col-xs-8">
+                <div class="panel panel-default pre-scrollable" id="chat">
+                </div>
+            </div>
+            <div class="col col-xs-4">
+                <div class="panel panel-default pre-scrollable">
+                    <div class="row" id="users-list">
+                        <div class="col col-xs-12">
+                            <div>
+                                    <div class="text-indented">Players</div>
+                                    <div id="players-list">
+{#                                        <div>INSERT PLAYER HERE</div>#}
+                                    </div>
+                             </div>
+                             <hr>
+                             <div>
+                                <div  class="text-indented" id="spectators">Spectators</div>
+                                <div id="spectators-list">
+{#                                        <div>INSERT SPECTATOR HERE</div>#}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     <div class="panel panel-default">
         <div class="input-group">
           <input type="text" class="form-control" id="input-message" placeholder="Write message">

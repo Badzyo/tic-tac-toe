@@ -63,8 +63,7 @@ function update_player_status(player) {
 }
 
 function update_spectators_list(user) {
-    // TODO
-    return;
+    add_spectator_to_list(user);
 }
 
 function draw_line(id1, id2){
@@ -129,7 +128,10 @@ function send_chat_message(socket, text) {
 function connect(data) {
     if (data.user.player_number < 3) {
         update_player_status(data.user);
+        remove_user_from_list(data.user);
+        add_player_to_list(data.user);
     } else {
+        add_spectator_to_list(data.user);
         toastr.info(data.user.name + " is watching the game.");
     }
 }
@@ -138,13 +140,17 @@ function disconnect(data) {
     if (data.user.player_number < 3) {
         update_player_status(data.user);
     }
+    remove_user_from_list(data.user);
 }
 
 function init_game(data) {
     current_player = data.current_player;
     show_arrow(current_player);
 
-    data.players.forEach(update_player_status);
+    data.players.forEach(function(player){
+        update_player_status(player);
+        add_player_to_list(player);
+    });
 
     data.spectators.forEach(function(user_name) {
         update_spectators_list(user_name);
@@ -204,6 +210,25 @@ function flee(data) {
     show_results(data.finish.result, [1, 2]);
     update_player_status(data.user);
     toastr.info('Opponent has left the game. You win!');
+}
+
+function get_user_list_item(user) {
+    var player_div = document.createElement('div');
+    player_div.setAttribute("id", user.player_number);
+    player_div.textContent = user.name;
+    return player_div;
+}
+
+function add_player_to_list(player) {
+    $("#players-list").append(get_user_list_item(player));
+}
+
+function add_spectator_to_list(player) {
+    $("#spectators-list").append(get_user_list_item(player));
+}
+
+function remove_user_from_list(user) {
+    $('#' + user.player_number).remove();
 }
 
 $(document).ready(function(){

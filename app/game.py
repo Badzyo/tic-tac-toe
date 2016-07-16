@@ -25,8 +25,8 @@ class ActiveGameHandler:
             # to get second player name
             self.game.refresh_from_db()
         player_name = self.game.get_player_by_number(player_number)
-        self.connect_notification(player_name, player_number)
         self.players[player_number] = (socket, player_name)
+        self.connect_notification(player_name, player_number)
         self.send_game_data(player_number)
         if (not self.started) and self.game.state != Game.game_state['finished']:
             if {1, 2}.issubset(self.players):
@@ -48,7 +48,10 @@ class ActiveGameHandler:
         """
         Send broadcast message to all online users in game
         """
-        for socket, _ in self.players.values():
+        for socket, name in self.players.values():
+            if (message['message'] in ('connect', 'disconnect')) and message['user']['name'] == name:
+                # Skip sending message to the sender
+                continue
             socket.write_message(message)
 
     def disconnect_notification(self, player_name, player_number):
@@ -99,7 +102,11 @@ class ActiveGameHandler:
         for key, value in self.players.items():
             player_name = value[1]
             if key > 2:
-                data['spectators'].append(player_name)
+                spectator = {
+                    'name': player_name,
+                    'player_number': key,
+                }
+                data['spectators'].append(spectator)
         data['moves'] = self.game.moves
         socket.write_message(data)
 
