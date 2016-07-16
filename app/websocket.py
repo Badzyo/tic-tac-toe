@@ -1,7 +1,7 @@
 import json
 import datetime
 from tornado.ioloop import IOLoop
-from tornado.websocket import WebSocketHandler
+from tornado.websocket import WebSocketHandler, WebSocketClosedError
 from app.game import ActiveGameHandler
 
 
@@ -18,6 +18,16 @@ class GameWSHandler(WebSocketHandler):
             'chat': self.handle_chat,
             'flee': self.handle_flee
         }
+
+    def _ping(self):
+        """
+        Periodically ping connection to keep it alive
+        """
+        try:
+            self.ping(b'ping')
+            IOLoop.instance().add_timeout(datetime.timedelta(seconds=self.ping_interval), self._ping)
+        except WebSocketClosedError as e:
+            pass
 
     def open(self, game_id, player_number):
         self.player_number = int(player_number)
@@ -44,12 +54,6 @@ class GameWSHandler(WebSocketHandler):
         if self.active_game.is_empty:
             GameWSHandler._remove_active_game(self.active_game.id)
 
-    def _ping(self):
-        """
-        Periodically ping connection to keep it alive
-        """
-        self.ping(b'ping')
-        IOLoop.instance().add_timeout(datetime.timedelta(seconds=self.ping_interval), self._ping)
 
     @classmethod
     def _get_active_game(cls, game_id):
