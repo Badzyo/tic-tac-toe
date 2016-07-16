@@ -3,6 +3,10 @@
 {% block title %}
     {{ user.username }}: TicTacToe
 {% endblock %}
+{% block navbar_links %}
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li class="active"><a href="{{ url_for('user_profile', user_id=current_user.id) }}">Profile <span class="sr-only">(current)</span></a></li>
+{% endblock %}
 {% block content %}
     <h3>{{ user.username }} Profile</h3>
     <a href="{{ url_for('index') }}" class="btn btn-default">Back to main</a>

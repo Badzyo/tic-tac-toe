@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% from "macros/macros.html" import render_grid %}
-{% from "macros/macros.html" import render_button %}
 {% from "macros/macros.html" import render_game_header %}
 {% from "macros/macros.html" import render_game_rules %}
 {% block title %}
@@ -13,9 +12,13 @@ Game : TicTacToe
         var game_id = {{ game.id }};
         var game_state = {{ game.state }};
         var game_result = {{ game.result }};
-{#        var game_result = {{ game.result if game.result else -1 }};#}
     </script>
     <script src="/static/scripts/game.js"></script>
+{% endblock %}
+{% block navbar_links %}
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li><a href="{{ url_for('user_profile', user_id=current_user.id) }}">Profile</a></li>
+    <li class="active"><a href="{{ url_for('show_game', game_id=game.id) }}">Game <span class="sr-only">(current)</span></a></li>
 {% endblock %}
 {% block content %}
     <div class="main-block row col-lg-8 col-lg-offset-2 col-md-8 col-md-offset-2 col-xs-12">

@@ -1,17 +1,3 @@
-{% macro render_logout_button() %}
-<form action="{{ url_for('logout') }}" method="POST">
-<input type="submit" value="Logout" class="btn btn-default">
-</form>
-{% endmacro %}
-
-
-{# Render bootstrap3 button #}
-{% macro render_button(action_url='', action_text='Submit', class_='', id_='', btn_class='btn btn-default') %}
-    <form method="POST" action="{{ action_url }}" class="{{ class_ }}">
-        <button type="submit" class="{{ btn_class }}" id="{{ id_ }}">{{ action_text }} </button>
-    </form>
-{% endmacro %}
-
 {# Render empty post form #}
 {% macro render_post_form(action_url='', id_='') %}
     <form method="POST" action="{{ action_url }}" id="{{ id_ }}"></form>

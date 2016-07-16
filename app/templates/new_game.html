@@ -7,6 +7,10 @@ New Game : TicTacToe
     {{ super() }}
     <script src="/static/scripts/game_creation_validator.js"></script>
 {% endblock %}
+{% block navbar_links %}
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li><a href="{{ url_for('user_profile', user_id=current_user.id) }}">Profile</a></li>
+{% endblock %}
 {% block content %}
     <div class="main-block row col-lg-4 col-lg-offset-4 col-md-6 col-md-offset-3 col-xs-12">
         <h3>New game</h3>
