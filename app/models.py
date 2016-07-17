@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import exc
@@ -144,3 +145,13 @@ class GameMove(db.Model):
     player_number = db.Column(db.Integer)
     x = db.Column(db.Integer)
     y = db.Column(db.Integer)
+
+    def dic(self):
+        return {
+            "player": self.player_number,
+            "x": self.x,
+            "y": self.y
+        }
+
+    def __repr__(self):
+        return json.dumps(self.dic())

@@ -1,6 +1,8 @@
 var current_player = -1;
 var $win_label = $('<span class="label label-success result-label">Winner</span>');
 var $lose_label = $('<span class="label label-info result-label">Loser</span>');
+var x_mark = '<span class="fa fa-times x-mark" id="mark" aria-hidden="true"></span>';
+var y_mark = '<span class="fa fa-circle-o o-mark" id="mark" aria-hidden="true"></span>';
 
 function build_chat_row(name, text) {
     var chat_row = document.createElement("div");
@@ -23,9 +25,9 @@ function draw_tile_mark(move) {
     tile_id = "#" + move.x + "-" + move.y;
 
     if (move.player == 1){
-        mark = '<span class="fa fa-times x-mark" id="mark" aria-hidden="true"></span>'
+        mark = x_mark;
     } else {
-        mark = '<span class="fa fa-circle-o o-mark" id="mark" aria-hidden="true"></span>'
+        mark = y_mark;
     }
     $(tile_id).append(mark);
 }
@@ -232,83 +234,101 @@ function remove_user_from_list(user) {
 }
 
 $(document).ready(function(){
-    game_result = (game_result == 'None') ? -1 : game_result;
+    if (active_game) {
+        // GAME IN PROGRESS
+        game_result = (game_result == 'None') ? -1 : game_result;
 
-    var ws = new WebSocket("ws://" + location.host + "/ws" + location.pathname + "/" + player_number);
-    var $input_message = $("#input-message");
-    var $chat_btn = $("#chat-send");
+        var ws = new WebSocket("ws://" + location.host + "/ws" + location.pathname + "/" + player_number);
+        var $input_message = $("#input-message");
+        var $chat_btn = $("#chat-send");
 
-    ws.onmessage = function (msg) {
-        var data = JSON.parse(msg.data);
-        switch (data.message) {
-            case 'connect':
-                connect(data);
-                break;
-            case 'disconnect':
-                disconnect(data);
-                break;
-            case 'initial':
-                init_game(data);
-                break;
-            case 'start':
-                start_game();
-                break;
-            case 'move':
-                receive_move(data);
-                break;
-            case 'finish':
-                finish(data);
-                break;
-            case 'flee':
-                flee(data);
-                break;
-            case 'chat':
-                add_chat_message(data);
-                break;
-            default:
-                console.log.error('Unknown message type received!');
-                console.log.error(data);
-        }
+        ws.onmessage = function (msg) {
+            var data = JSON.parse(msg.data);
+            switch (data.message) {
+                case 'connect':
+                    connect(data);
+                    break;
+                case 'disconnect':
+                    disconnect(data);
+                    break;
+                case 'initial':
+                    init_game(data);
+                    break;
+                case 'start':
+                    start_game();
+                    break;
+                case 'move':
+                    receive_move(data);
+                    break;
+                case 'finish':
+                    finish(data);
+                    break;
+                case 'flee':
+                    flee(data);
+                    break;
+                case 'chat':
+                    add_chat_message(data);
+                    break;
+                default:
+                    console.log.error('Unknown message type received!');
+                    console.log.error(data);
+            }
 
-    };
+        };
 
-    $(document).on('click', '.tile-button', function(e){
-        if ((e.target.id != 'mark') && (e.target.innerHTML.length == 0)) {
-            if (player_number == current_player) {
+        $(document).on('click', '.tile-button', function (e) {
+            if ((e.target.id != 'mark') && (e.target.innerHTML.length == 0)) {
+                if (player_number == current_player) {
+                    var data = {
+                        message: 'move',
+                        game: game_id,
+                        user: player_number,
+                        cell: e.target.id.split('-')
+                    };
+                    ws.send(JSON.stringify(data));
+                }
+            }
+
+        });
+
+        $input_message.keyup(function (event) {
+            if (event.keyCode == 13) {
+                $chat_btn.click();
+            }
+        });
+
+        $(document).on('click', '#chat-send', function (e) {
+            if ($input_message.val()) {
+                send_chat_message(ws, $input_message.val());
+                $input_message.val("");
+            }
+        });
+
+        $(document).on('click', '#flee-btn', function (e) {
             var data = {
-                message: 'move',
-                game: game_id,
-                user: player_number,
-                cell: e.target.id.split('-')
+                message: "flee"
             };
             ws.send(JSON.stringify(data));
-            }
-        }
+            $('#flee-form').submit();
+        });
 
-    });
+        $(document).on('click', '#join-btn', function (e) {
+            $('#join-form').submit();
+        });
+    } else {
+        // GAME REPLAY
+        $("#player1 > .player-panel > .panel-body").prepend(x_mark);
+        $("#player2 > .player-panel > .panel-body").append(y_mark);
+        $.getJSON('/game/' + game_id + '/json', function(data) {
+            data.moves.forEach(function(move) {
+                draw_tile_mark(move);
+            });
 
-    $input_message.keyup(function(event){
-        if(event.keyCode == 13){
-            $chat_btn.click();
-        }
-    });
-
-    $(document).on('click', '#chat-send', function(e){
-        if ($input_message.val()) {
-            send_chat_message(ws, $input_message.val());
-            $input_message.val("");
-        }
-    });
-
-    $(document).on('click', '#flee-btn', function(e){
-        var data = {
-            message: "flee"
-        };
-        ws.send(JSON.stringify(data));
-        $('#flee-form').submit();
-    });
-
-    $(document).on('click', '#join-btn', function(e){
-        $('#join-form').submit();
-    });
+            data.players.forEach(function(player) {
+                if ($.inArray(game_result, [1, 2]) >= 0) {
+                    show_results(game_result, [player.player_number]);
+                }
+            });
+        });
+    }
 });

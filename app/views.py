@@ -1,5 +1,5 @@
 import random
-from flask import render_template, redirect, flash, url_for, request
+from flask import render_template, redirect, flash, url_for, request, jsonify
 from flask_login import login_user, logout_user, current_user, login_required
 from sqlalchemy import desc
 from app import app, db, login_manager, forms
@@ -167,8 +167,24 @@ def user_profile(user_id):
 def show_archived_game(game_id):
     game = Game.query.get_or_404(game_id)
     player_number = current_user.id + 100  # unique spectator id
-    return render_template('arch_game.html', game=game, player_number=player_number)
+    template = 'archive_game.html'
+    if game.state != Game.game_state['finished']:
+        template = 'game.html'
+    return render_template(template, game=game, player_number=player_number)
 
+
+@app.route("/game/<int:game_id>/json", methods=['GET'])
+def get_game_data(game_id):
+    game = Game.query.get_or_404(game_id)
+    players = []
+    for index, player_name in enumerate((game.player1.username, game.player2.username)):
+        player = {
+            'name': player_name,
+            'player_number': index + 1
+        }
+        players.append(player)
+    moves = list(map(GameMove.dic, game.moves))
+    return jsonify(moves=moves, players=players)
 
 
 @login_manager.user_loader
