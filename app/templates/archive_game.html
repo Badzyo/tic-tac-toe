@@ -2,6 +2,7 @@
 {% from "macros/macros.html" import render_grid %}
 {% from "macros/macros.html" import render_game_header %}
 {% from "macros/macros.html" import render_game_rules %}
+{% from "macros/macros.html" import render_replay_controls %}
 {% block title %}
     Replay : TicTacToe
 {% endblock %}
@@ -28,6 +29,7 @@
             <div class="panel-body">
                 {{ render_grid(game) }}
             </div>
+            {{ render_replay_controls() }}
             {{ render_game_rules(game) }}
         </div>
     </div>

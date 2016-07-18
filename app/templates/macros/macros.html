@@ -230,3 +230,13 @@
           <strong>Goal:</strong> {{ game.win_length }} in line
         </div>
 {% endmacro %}
+
+
+{# Renders game replay controls #}
+{% macro render_replay_controls() %}
+<div class="btn-group btn-group-justified">
+  <a href="javascript:{}" id="prev-btn" class="btn btn-primary"><span class="fa fa-backward" aria-hidden="true"></span> Prev</a>
+  <a href="javascript:{}" id="start-btn" class="btn btn-primary">Start <span class="fa fa-refresh" aria-hidden="true"></a>
+  <a href="javascript:{}" id="next-btn" class="btn btn-primary">Next <span class="fa fa-forward" aria-hidden="true"></span></a>
+</div>
+{% endmacro %}

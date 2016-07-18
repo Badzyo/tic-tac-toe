@@ -32,6 +32,11 @@ function draw_tile_mark(move) {
     $(tile_id).append(mark);
 }
 
+function remove_tile_mark(move) {
+    selector = "#" + move.x + "-" + move.y + " > span";
+    $(selector).remove();
+}
+
 function show_arrow(number) {
     $('.arrow'+number).css({ 'opacity' : 1 });
 }
@@ -233,6 +238,8 @@ function remove_user_from_list(user) {
     $('#' + user.player_number).remove();
 }
 
+
+
 $(document).ready(function(){
     if (active_game) {
         // GAME IN PROGRESS
@@ -320,15 +327,37 @@ $(document).ready(function(){
         $("#player1 > .player-panel > .panel-body").prepend(x_mark);
         $("#player2 > .player-panel > .panel-body").append(y_mark);
         $.getJSON('/game/' + game_id + '/json', function(data) {
-            data.moves.forEach(function(move) {
+            moves = data.moves;
+            moves.forEach(function(move) {
                 draw_tile_mark(move);
             });
-
+            current_move = moves.length - 1;
             data.players.forEach(function(player) {
                 if ($.inArray(game_result, [1, 2]) >= 0) {
                     show_results(game_result, [player.player_number]);
                 }
             });
+        });
+
+        $(document).on('click', '#start-btn', function (e) {
+            moves.forEach(function(move) {
+                remove_tile_mark(move);
+            });
+            current_move = -1;
+        });
+
+        $(document).on('click', '#prev-btn', function (e) {
+            if (current_move >= 0) {
+                remove_tile_mark(moves[current_move]);
+                current_move -= 1;
+            };
+        });
+
+        $(document).on('click', '#next-btn', function (e) {
+            if (current_move < moves.length - 1) {
+                current_move += 1;
+                draw_tile_mark(moves[current_move]);
+            };
         });
     }
 });
