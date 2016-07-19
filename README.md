@@ -1,9 +1,9 @@
 # Tic-Tac-Toe
 
 - [Play Tic-Tac-Toe](http://game.badzyo.pp.ua) online vs humans!  
-- Choose grid size and game rules that you like.  
-- Use in-game chat to communicate with your opponent.  
-- View games history and replays in your profile.  
+- Choose grid size and game rules that you like  
+- Use in-game chat to communicate with your opponent  
+- View games history and replays in your profile  
 <br>
 
 [![](misc/Screenshot.png?raw=true)]()  
@@ -22,7 +22,6 @@ $ pip install -r requirements.txt
 $ python manage.py db init
 $ python manage.py db migrate
 $ python manage.py db upgrade
-$ python run.py
 ```
 Run
 =====
