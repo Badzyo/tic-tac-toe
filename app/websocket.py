@@ -35,6 +35,8 @@ class GameWSHandler(WebSocketHandler):
 
         # add current user to online users in active game
         self.active_game.connect_user(self.player_number, self)
+        # Start to ping connection
+        self._ping()
 
     def on_message(self, message):
         msg = json.loads(message)
